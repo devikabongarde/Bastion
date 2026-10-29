@@ -1,0 +1,1804 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "org.baselineguard.linux.phase1",
+  "version": "0.1.0",
+  "publisher": "BaselineGuard project",
+  "license": "Apache-2.0",
+  "rights_reference": "Original project-authored demonstration content. No benchmark text or benchmark mapping is included.",
+  "engine_compatibility": ">=0.1.0 <1.0.0",
+  "benchmark": null,
+  "targets": {
+    "family": "ubuntu",
+    "version_range": ">=22.04 <23.0",
+    "roles": [
+      "server",
+      "desktop"
+    ]
+  },
+  "parameters": {},
+  "controls": [
+    {
+      "id": "org.linux.ubuntu22.auth_ssh_permit_root_login",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable direct SSH login for the root account",
+      "severity": "high",
+      "description": "Evaluate the normalized fact `auth.ssh.permit_root_login` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.ssh.permit_root_login",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "auth.ssh.permit_root_login",
+        "value": "no"
+      },
+      "expected": {
+        "fact": "auth.ssh.permit_root_login",
+        "operator": "eq",
+        "value": "no"
+      },
+      "evidence": [
+        "auth.ssh.permit_root_login",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.01",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.permit_root_login": {
+              "state": "PRESENT",
+              "value": "no"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.permit_root_login": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.permit_root_login": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.ssh.permit_root_login": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.auth_ssh_password_authentication",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable SSH password authentication when approved keys are provisioned",
+      "severity": "high",
+      "description": "Evaluate the normalized fact `auth.ssh.password_authentication` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.ssh.password_authentication",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "auth.ssh.password_authentication",
+        "value": "no"
+      },
+      "expected": {
+        "fact": "auth.ssh.password_authentication",
+        "operator": "eq",
+        "value": "no"
+      },
+      "evidence": [
+        "auth.ssh.password_authentication",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.02",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.password_authentication": {
+              "state": "PRESENT",
+              "value": "no"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.password_authentication": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.password_authentication": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.ssh.password_authentication": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.auth_ssh_x11_forwarding",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable SSH X11 forwarding where the server role does not require it",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `auth.ssh.x11_forwarding` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.ssh.x11_forwarding",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "auth.ssh.x11_forwarding",
+        "value": "no"
+      },
+      "expected": {
+        "fact": "auth.ssh.x11_forwarding",
+        "operator": "eq",
+        "value": "no"
+      },
+      "evidence": [
+        "auth.ssh.x11_forwarding",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.03",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.x11_forwarding": {
+              "state": "PRESENT",
+              "value": "no"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.x11_forwarding": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.x11_forwarding": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.ssh.x11_forwarding": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.auth_ssh_max_auth_tries",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Limit SSH authentication attempts",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `auth.ssh.max_auth_tries` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.ssh.max_auth_tries",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "lte",
+        "fact": "auth.ssh.max_auth_tries",
+        "value": 4
+      },
+      "expected": {
+        "fact": "auth.ssh.max_auth_tries",
+        "operator": "lte",
+        "value": 4
+      },
+      "evidence": [
+        "auth.ssh.max_auth_tries",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.04",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.max_auth_tries": {
+              "state": "PRESENT",
+              "value": 4
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.max_auth_tries": {
+              "state": "PRESENT",
+              "value": 5
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.max_auth_tries": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.ssh.max_auth_tries": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.auth_ssh_client_alive_interval",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Set a bounded SSH client idle interval",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `auth.ssh.client_alive_interval` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.ssh.client_alive_interval",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "gte",
+        "fact": "auth.ssh.client_alive_interval",
+        "value": 300
+      },
+      "expected": {
+        "fact": "auth.ssh.client_alive_interval",
+        "operator": "gte",
+        "value": 300
+      },
+      "evidence": [
+        "auth.ssh.client_alive_interval",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.05",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.client_alive_interval": {
+              "state": "PRESENT",
+              "value": 300
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.client_alive_interval": {
+              "state": "PRESENT",
+              "value": 299
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.client_alive_interval": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.ssh.client_alive_interval": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.auth_ssh_client_alive_count_max",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Bound unanswered SSH keepalive probes",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `auth.ssh.client_alive_count_max` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.ssh.client_alive_count_max",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "lte",
+        "fact": "auth.ssh.client_alive_count_max",
+        "value": 3
+      },
+      "expected": {
+        "fact": "auth.ssh.client_alive_count_max",
+        "operator": "lte",
+        "value": 3
+      },
+      "evidence": [
+        "auth.ssh.client_alive_count_max",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.06",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.client_alive_count_max": {
+              "state": "PRESENT",
+              "value": 3
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.client_alive_count_max": {
+              "state": "PRESENT",
+              "value": 4
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.ssh.client_alive_count_max": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.ssh.client_alive_count_max": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_net_ipv4_ip_forward",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable IPv4 forwarding on non-router hosts",
+      "severity": "high",
+      "description": "Evaluate the normalized fact `kernel.net.ipv4.ip_forward` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.net.ipv4.ip_forward",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.net.ipv4.ip_forward",
+        "value": 0
+      },
+      "expected": {
+        "fact": "kernel.net.ipv4.ip_forward",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "kernel.net.ipv4.ip_forward",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.07",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.ip_forward": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.ip_forward": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.ip_forward": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.net.ipv4.ip_forward": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_net_ipv4_conf_all_accept_redirects",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ignore IPv4 ICMP redirects on all interfaces",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `kernel.net.ipv4.conf.all.accept_redirects` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.net.ipv4.conf.all.accept_redirects",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.net.ipv4.conf.all.accept_redirects",
+        "value": 0
+      },
+      "expected": {
+        "fact": "kernel.net.ipv4.conf.all.accept_redirects",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "kernel.net.ipv4.conf.all.accept_redirects",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.08",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.accept_redirects": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.accept_redirects": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.accept_redirects": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.net.ipv4.conf.all.accept_redirects": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_net_ipv4_conf_default_accept_redirects",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ignore IPv4 ICMP redirects on new interfaces",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `kernel.net.ipv4.conf.default.accept_redirects` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.net.ipv4.conf.default.accept_redirects",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.net.ipv4.conf.default.accept_redirects",
+        "value": 0
+      },
+      "expected": {
+        "fact": "kernel.net.ipv4.conf.default.accept_redirects",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "kernel.net.ipv4.conf.default.accept_redirects",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.09",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.default.accept_redirects": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.default.accept_redirects": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.default.accept_redirects": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.net.ipv4.conf.default.accept_redirects": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_net_ipv4_conf_all_send_redirects",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable IPv4 ICMP redirect transmission",
+      "severity": "low",
+      "description": "Evaluate the normalized fact `kernel.net.ipv4.conf.all.send_redirects` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.net.ipv4.conf.all.send_redirects",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.net.ipv4.conf.all.send_redirects",
+        "value": 0
+      },
+      "expected": {
+        "fact": "kernel.net.ipv4.conf.all.send_redirects",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "kernel.net.ipv4.conf.all.send_redirects",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.10",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.send_redirects": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.send_redirects": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.send_redirects": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.net.ipv4.conf.all.send_redirects": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_net_ipv4_conf_all_accept_source_route",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable IPv4 source-routed packets",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `kernel.net.ipv4.conf.all.accept_source_route` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.net.ipv4.conf.all.accept_source_route",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.net.ipv4.conf.all.accept_source_route",
+        "value": 0
+      },
+      "expected": {
+        "fact": "kernel.net.ipv4.conf.all.accept_source_route",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "kernel.net.ipv4.conf.all.accept_source_route",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.11",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.accept_source_route": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.accept_source_route": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.conf.all.accept_source_route": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.net.ipv4.conf.all.accept_source_route": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_net_ipv4_tcp_syncookies",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Enable TCP SYN cookies",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `kernel.net.ipv4.tcp_syncookies` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.net.ipv4.tcp_syncookies",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.net.ipv4.tcp_syncookies",
+        "value": 1
+      },
+      "expected": {
+        "fact": "kernel.net.ipv4.tcp_syncookies",
+        "operator": "eq",
+        "value": 1
+      },
+      "evidence": [
+        "kernel.net.ipv4.tcp_syncookies",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.12",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.tcp_syncookies": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.tcp_syncookies": {
+              "state": "PRESENT",
+              "value": 2
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.net.ipv4.tcp_syncookies": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.net.ipv4.tcp_syncookies": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_randomize_va_space",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Enable full address space layout randomization",
+      "severity": "high",
+      "description": "Evaluate the normalized fact `kernel.randomize_va_space` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.randomize_va_space",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.randomize_va_space",
+        "value": 2
+      },
+      "expected": {
+        "fact": "kernel.randomize_va_space",
+        "operator": "eq",
+        "value": 2
+      },
+      "evidence": [
+        "kernel.randomize_va_space",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.13",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.randomize_va_space": {
+              "state": "PRESENT",
+              "value": 2
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.randomize_va_space": {
+              "state": "PRESENT",
+              "value": 3
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.randomize_va_space": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.randomize_va_space": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.kernel_fs_suid_dumpable",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Disable core dumps from set-user-ID programs",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `kernel.fs.suid_dumpable` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "kernel.fs.suid_dumpable",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "kernel.fs.suid_dumpable",
+        "value": 0
+      },
+      "expected": {
+        "fact": "kernel.fs.suid_dumpable",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "kernel.fs.suid_dumpable",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.14",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.fs.suid_dumpable": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.fs.suid_dumpable": {
+              "state": "PRESENT",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "kernel.fs.suid_dumpable": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "kernel.fs.suid_dumpable": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.files_etc_passwd_mode",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Restrict permissions on /etc/passwd",
+      "severity": "high",
+      "description": "Evaluate the normalized fact `files.etc_passwd.mode` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "files.etc_passwd.mode",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "files.etc_passwd.mode",
+        "value": "0644"
+      },
+      "expected": {
+        "fact": "files.etc_passwd.mode",
+        "operator": "eq",
+        "value": "0644"
+      },
+      "evidence": [
+        "files.etc_passwd.mode",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.15",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.etc_passwd.mode": {
+              "state": "PRESENT",
+              "value": "0644"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.etc_passwd.mode": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.etc_passwd.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "files.etc_passwd.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.files_etc_shadow_mode",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Restrict permissions on /etc/shadow",
+      "severity": "critical",
+      "description": "Evaluate the normalized fact `files.etc_shadow.mode` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "files.etc_shadow.mode",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "files.etc_shadow.mode",
+        "value": "0640"
+      },
+      "expected": {
+        "fact": "files.etc_shadow.mode",
+        "operator": "eq",
+        "value": "0640"
+      },
+      "evidence": [
+        "files.etc_shadow.mode",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.16",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.etc_shadow.mode": {
+              "state": "PRESENT",
+              "value": "0640"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.etc_shadow.mode": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.etc_shadow.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "files.etc_shadow.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.files_sshd_config_mode",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Restrict permissions on the main SSH daemon configuration",
+      "severity": "high",
+      "description": "Evaluate the normalized fact `files.sshd_config.mode` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "files.sshd_config.mode",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "files.sshd_config.mode",
+        "value": "0600"
+      },
+      "expected": {
+        "fact": "files.sshd_config.mode",
+        "operator": "eq",
+        "value": "0600"
+      },
+      "evidence": [
+        "files.sshd_config.mode",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.17",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.sshd_config.mode": {
+              "state": "PRESENT",
+              "value": "0600"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.sshd_config.mode": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.sshd_config.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "files.sshd_config.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.files_auth_log_mode",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Restrict permissions on the authentication log",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `files.auth_log.mode` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "files.auth_log.mode",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "files.auth_log.mode",
+        "value": "0640"
+      },
+      "expected": {
+        "fact": "files.auth_log.mode",
+        "operator": "eq",
+        "value": "0640"
+      },
+      "evidence": [
+        "files.auth_log.mode",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.18",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.auth_log.mode": {
+              "state": "PRESENT",
+              "value": "0640"
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.auth_log.mode": {
+              "state": "PRESENT",
+              "value": "unexpected_value"
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "files.auth_log.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "files.auth_log.mode": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.auth_umask_default",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Set a restrictive default user file-creation mask",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `auth.umask.default` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "auth.umask.default",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "gte",
+        "fact": "auth.umask.default",
+        "value": 27
+      },
+      "expected": {
+        "fact": "auth.umask.default",
+        "operator": "gte",
+        "value": 27
+      },
+      "evidence": [
+        "auth.umask.default",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.19",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.umask.default": {
+              "state": "PRESENT",
+              "value": 27
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.umask.default": {
+              "state": "PRESENT",
+              "value": 26
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "auth.umask.default": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "auth.umask.default": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.linux.ubuntu22.services_system_time_synchronized",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Verify system time synchronization",
+      "severity": "medium",
+      "description": "Evaluate the normalized fact `services.system_time.synchronized` on a supported Ubuntu 22.04 host.",
+      "rationale": "This independently authored starter control reduces avoidable configuration exposure; administrators must confirm applicability to their role and operating requirements.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "ubuntu"
+      },
+      "required_facts": [
+        "services.system_time.synchronized",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "services.system_time.synchronized",
+        "value": true
+      },
+      "expected": {
+        "fact": "services.system_time.synchronized",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "services.system_time.synchronized",
+        "platform.family"
+      ],
+      "remediation_template": "manual.linux.20",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "services.system_time.synchronized": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "services.system_time.synchronized": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "ubuntu"
+            },
+            "services.system_time.synchronized": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "rhel"
+            },
+            "services.system_time.synchronized": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "change_log": [
+    "Phase 1 synthetic starter controls; applicability, thresholds, and remediations require platform and policy review before production use."
+  ]
+}

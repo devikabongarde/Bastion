@@ -1,0 +1,22 @@
+{
+  "include": [
+    "apps/api/src",
+    "apps/collector/src",
+    "apps/reporter/src",
+    "apps/scheduler/src",
+    "packages/adapters/src",
+    "packages/contracts/src",
+    "packages/domain/src",
+    "packages/persistence/src",
+    "packages/rule_engine/src",
+    "migrations"
+  ],
+  "exclude": ["**/__pycache__", ".venv", "node_modules"],
+  "extraPaths": ["apps/reporter/src", "apps/scheduler/src"],
+  "pythonVersion": "3.12",
+  "venvPath": ".",
+  "venv": ".venv",
+  "typeCheckingMode": "basic",
+  "reportMissingImports": "error",
+  "reportUnknownVariableType": "warning"
+}

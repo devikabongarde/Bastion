@@ -1,0 +1,188 @@
+schema_version: "1.0"
+status: "phase0-unverified"
+updated_at: null
+notice: >-
+  These are planned lab targets copied from PRD Section 4.3, not verified support.
+  Do not mark a target supported until Phase 0 obtains an authorized lab and Phase 1
+  records live adapter contract results for the exact build and capabilities.
+platforms:
+  - id: ubuntu-22.04-x86_64-server
+    family: ubuntu
+    version: "22.04"
+    role: server
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: ubuntu-22.04-x86_64-desktop
+    family: ubuntu
+    version: "22.04"
+    role: desktop
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: windows-11-enterprise-24h2-standalone
+    family: windows
+    version: "11-24H2"
+    role: standalone
+    collection: winrm_https
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: windows-11-enterprise-24h2-domain-joined
+    family: windows
+    version: "11-24H2"
+    role: domain_joined
+    collection: winrm_https
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: windows-server-2019-standalone
+    family: windows_server
+    version: "2019"
+    role: standalone
+    collection: winrm_https
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: windows-server-2019-member
+    family: windows_server
+    version: "2019"
+    role: member_server
+    collection: winrm_https
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: windows-server-2019-domain-controller
+    family: windows_server
+    version: "2019"
+    role: domain_controller
+    collection: winrm_https
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: cisco-iosxe-17.12-router
+    family: cisco_ios_xe
+    version: "17.12"
+    role: router
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: cisco-iosxe-17.12-switch
+    family: cisco_ios_xe
+    version: "17.12"
+    role: switch
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: fortigate-fortios-7.4-root-vdom
+    family: fortigate
+    version: "7.4"
+    role: appliance_root_vdom
+    collection: local_https_api_or_ssh_show
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: ubuntu-20.04-x86_64-server
+    family: ubuntu
+    version: "20.04"
+    role: server
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: ubuntu-20.04-x86_64-desktop
+    family: ubuntu
+    version: "20.04"
+    role: desktop
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: rhel-8-server
+    family: rhel
+    version: "8"
+    role: server
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: rhel-8-workstation
+    family: rhel
+    version: "8"
+    role: workstation
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: rhel-9-server
+    family: rhel
+    version: "9"
+    role: server
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: rhel-9-workstation
+    family: rhel
+    version: "9"
+    role: workstation
+    collection: ssh
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: cisco-asa-9.18-firewall
+    family: cisco_asa
+    version: "9.18"
+    role: firewall
+    collection: ssh_show
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: checkpoint-gaia-r81.20-gateway
+    family: checkpoint_gaia
+    version: "R81.20"
+    role: gateway
+    collection: gaia_and_management_api
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: sophos-sfos-21.5-firewall
+    family: sophos_firewall
+    version: "21.5"
+    role: firewall
+    collection: local_https_api
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null
+  - id: paloalto-panos-11.1-firewall
+    family: palo_alto
+    version: "11.1"
+    role: firewall
+    collection: local_xml_api
+    target_status: planned
+    exact_build: null
+    lab_owner: null
+    verified_at: null

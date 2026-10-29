@@ -1,0 +1,20 @@
+[project]
+name = "baselineguard-evaluator"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["baselineguard-contracts", "baselineguard-domain", "baselineguard-rule-engine", "baselineguard-persistence", "baselineguard-evidence"]
+
+[tool.uv.sources]
+baselineguard-contracts = { workspace = true }
+baselineguard-domain = { workspace = true }
+baselineguard-rule-engine = { workspace = true }
+baselineguard-persistence = { workspace = true }
+baselineguard-evidence = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/baselineguard_evaluator"]
+

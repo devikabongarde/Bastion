@@ -1,0 +1,31 @@
+[project]
+name = "baselineguard-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "baselineguard-contracts",
+  "baselineguard-domain",
+  "baselineguard-persistence",
+  "baselineguard-rule-engine",
+  "fastapi>=0.115,<1",
+  "pydantic-settings>=2.7,<3",
+  "uvicorn[standard]>=0.34,<1",
+  "argon2-cffi>=23.1,<26",
+  "cryptography>=44,<47",
+  "structlog>=25,<26",
+  "python-dotenv>=1.0,<2",
+]
+
+[tool.uv.sources]
+baselineguard-contracts = { workspace = true }
+baselineguard-domain = { workspace = true }
+baselineguard-persistence = { workspace = true }
+baselineguard-rule-engine = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/baselineguard_api"]
+

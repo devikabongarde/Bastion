@@ -1,0 +1,366 @@
+{
+  "schema_version": "1.0",
+  "note": "Original project-authored remediation guidance.",
+  "templates": {
+    "manual.forti.01": {
+      "summary": "Enable `admin-https-redirect` in system global.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure admin HTTPS redirect is enabled.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.02": {
+      "summary": "Enable `pre-login-banner` in system global.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure pre-login warning banner is enabled.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.03": {
+      "summary": "Enable `strong-crypto` in system global.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure strong cryptographic cipher suites are enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.04": {
+      "summary": "Change `admin-sport` in system global.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure administrative HTTPS port is changed from default 443.",
+        "Configure setting to: 8443.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects 8443.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.05": {
+      "summary": "Change `admin-ssh-port` in system global.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure administrative SSH port is changed from default 22.",
+        "Configure setting to: 2222.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects 2222.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.06": {
+      "summary": "Set `admintimeout` in system global.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure administrator idle timeout is 15 or fewer minutes.",
+        "Configure setting to: 15.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects 15.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.07": {
+      "summary": "Restrict overly broad permit policies.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure no firewall policy permits uninspected ANY->ANY traffic.",
+        "Configure setting to: 0.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects 0.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.08": {
+      "summary": "Ensure implicit or explicit default drop policy.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure firewall default deny rule is in place.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.09": {
+      "summary": "Enable syslog in `log syslogd setting`.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure remote syslog logging is enabled.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.10": {
+      "summary": "Configure FortiOS baseline setting #10.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #10 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.11": {
+      "summary": "Configure FortiOS baseline setting #11.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #11 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.12": {
+      "summary": "Configure FortiOS baseline setting #12.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #12 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.13": {
+      "summary": "Configure FortiOS baseline setting #13.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #13 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.14": {
+      "summary": "Configure FortiOS baseline setting #14.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #14 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.15": {
+      "summary": "Configure FortiOS baseline setting #15.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #15 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.16": {
+      "summary": "Configure FortiOS baseline setting #16.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #16 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.17": {
+      "summary": "Configure FortiOS baseline setting #17.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #17 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.18": {
+      "summary": "Configure FortiOS baseline setting #18.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #18 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.19": {
+      "summary": "Configure FortiOS baseline setting #19.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #19 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.20": {
+      "summary": "Configure FortiOS baseline setting #20.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #20 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.21": {
+      "summary": "Configure FortiOS baseline setting #21.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #21 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.22": {
+      "summary": "Configure FortiOS baseline setting #22.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #22 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.23": {
+      "summary": "Configure FortiOS baseline setting #23.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #23 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.24": {
+      "summary": "Configure FortiOS baseline setting #24.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #24 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.25": {
+      "summary": "Configure FortiOS baseline setting #25.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #25 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.26": {
+      "summary": "Configure FortiOS baseline setting #26.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #26 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.27": {
+      "summary": "Configure FortiOS baseline setting #27.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #27 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.28": {
+      "summary": "Configure FortiOS baseline setting #28.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #28 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.29": {
+      "summary": "Configure FortiOS baseline setting #29.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #29 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    },
+    "manual.forti.30": {
+      "summary": "Configure FortiOS baseline setting #30.",
+      "steps": [
+        "Log in to FortiGate GUI or CLI with administrative credentials.",
+        "Navigate to System or Firewall policy configuration for: Ensure Fortinet FortiOS infrastructure hardening baseline control #30 is enforced.",
+        "Configure setting to: True.",
+        "Verify configuration change and test management reachability."
+      ],
+      "verify": "Verify setting reflects True.",
+      "impact": "Administrative access ports or sessions may be updated.",
+      "authority": "Local FortiOS configuration or FortiManager."
+    }
+  }
+}

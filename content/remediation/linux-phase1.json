@@ -1,0 +1,212 @@
+{
+  "schema_version": "1.0",
+  "note": "Original project-authored remediation guidance. Review before use; BaselineGuard never executes these commands.",
+  "templates": {
+    "manual.linux.01": {
+      "summary": "Set `PermitRootLogin no` in a drop-in file under /etc/ssh/sshd_config.d/ and reload the daemon.",
+      "steps": [
+        "echo 'PermitRootLogin no' | sudo tee /etc/ssh/sshd_config.d/60-baselineguard.conf",
+        "sudo sshd -t",
+        "sudo systemctl reload ssh"
+      ],
+      "verify": "sudo sshd -T | grep -i '^permitrootlogin '",
+      "impact": "Administrators must use named accounts with sudo; verify one works first.",
+      "authority": "Local file, or your configuration-management system if it owns /etc/ssh."
+    },
+    "manual.linux.02": {
+      "summary": "Set `PasswordAuthentication no` in a drop-in file under /etc/ssh/sshd_config.d/ and reload the daemon.",
+      "steps": [
+        "echo 'PasswordAuthentication no' | sudo tee /etc/ssh/sshd_config.d/60-baselineguard.conf",
+        "sudo sshd -t",
+        "sudo systemctl reload ssh"
+      ],
+      "verify": "sudo sshd -T | grep -i '^passwordauthentication '",
+      "impact": "Confirm key-based access works for every administrator before disabling passwords.",
+      "authority": "Local file, or your configuration-management system if it owns /etc/ssh."
+    },
+    "manual.linux.03": {
+      "summary": "Set `X11Forwarding no` in a drop-in file under /etc/ssh/sshd_config.d/ and reload the daemon.",
+      "steps": [
+        "echo 'X11Forwarding no' | sudo tee /etc/ssh/sshd_config.d/60-baselineguard.conf",
+        "sudo sshd -t",
+        "sudo systemctl reload ssh"
+      ],
+      "verify": "sudo sshd -T | grep -i '^x11forwarding '",
+      "impact": "Remote GUI forwarding stops working over SSH.",
+      "authority": "Local file, or your configuration-management system if it owns /etc/ssh."
+    },
+    "manual.linux.04": {
+      "summary": "Set `MaxAuthTries 4` in a drop-in file under /etc/ssh/sshd_config.d/ and reload the daemon.",
+      "steps": [
+        "echo 'MaxAuthTries 4' | sudo tee /etc/ssh/sshd_config.d/60-baselineguard.conf",
+        "sudo sshd -t",
+        "sudo systemctl reload ssh"
+      ],
+      "verify": "sudo sshd -T | grep -i '^maxauthtries '",
+      "impact": "Users with many keys loaded may be disconnected sooner.",
+      "authority": "Local file, or your configuration-management system if it owns /etc/ssh."
+    },
+    "manual.linux.05": {
+      "summary": "Set `ClientAliveInterval 300` in a drop-in file under /etc/ssh/sshd_config.d/ and reload the daemon.",
+      "steps": [
+        "echo 'ClientAliveInterval 300' | sudo tee /etc/ssh/sshd_config.d/60-baselineguard.conf",
+        "sudo sshd -t",
+        "sudo systemctl reload ssh"
+      ],
+      "verify": "sudo sshd -T | grep -i '^clientaliveinterval '",
+      "impact": "Idle sessions are probed every five minutes.",
+      "authority": "Local file, or your configuration-management system if it owns /etc/ssh."
+    },
+    "manual.linux.06": {
+      "summary": "Set `ClientAliveCountMax 3` in a drop-in file under /etc/ssh/sshd_config.d/ and reload the daemon.",
+      "steps": [
+        "echo 'ClientAliveCountMax 3' | sudo tee /etc/ssh/sshd_config.d/60-baselineguard.conf",
+        "sudo sshd -t",
+        "sudo systemctl reload ssh"
+      ],
+      "verify": "sudo sshd -T | grep -i '^clientalivecountmax '",
+      "impact": "Unresponsive sessions are dropped after the configured count.",
+      "authority": "Local file, or your configuration-management system if it owns /etc/ssh."
+    },
+    "manual.linux.07": {
+      "summary": "Persist `net.ipv4.ip_forward = 0` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'net.ipv4.ip_forward = 0' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl net.ipv4.ip_forward",
+      "impact": "Disables routing; do not apply on routers, VPN gateways, or container hosts without review.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.08": {
+      "summary": "Persist `net.ipv4.conf.all.accept_redirects = 0` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'net.ipv4.conf.all.accept_redirects = 0' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl net.ipv4.conf.all.accept_redirects",
+      "impact": "ICMP redirects are ignored.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.09": {
+      "summary": "Persist `net.ipv4.conf.default.accept_redirects = 0` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'net.ipv4.conf.default.accept_redirects = 0' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl net.ipv4.conf.default.accept_redirects",
+      "impact": "ICMP redirects are ignored on new interfaces.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.10": {
+      "summary": "Persist `net.ipv4.conf.all.send_redirects = 0` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'net.ipv4.conf.all.send_redirects = 0' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl net.ipv4.conf.all.send_redirects",
+      "impact": "Host no longer sends ICMP redirects.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.11": {
+      "summary": "Persist `net.ipv4.conf.all.accept_source_route = 0` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'net.ipv4.conf.all.accept_source_route = 0' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl net.ipv4.conf.all.accept_source_route",
+      "impact": "Source-routed packets are dropped.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.12": {
+      "summary": "Persist `net.ipv4.tcp_syncookies = 1` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'net.ipv4.tcp_syncookies = 1' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl net.ipv4.tcp_syncookies",
+      "impact": "Mitigates SYN floods with negligible overhead.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.13": {
+      "summary": "Persist `kernel.randomize_va_space = 2` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'kernel.randomize_va_space = 2' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl kernel.randomize_va_space",
+      "impact": "Enables full address-space randomisation.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.14": {
+      "summary": "Persist `fs.suid_dumpable = 0` in a sysctl drop-in and apply it.",
+      "steps": [
+        "echo 'fs.suid_dumpable = 0' | sudo tee /etc/sysctl.d/60-baselineguard.conf -a",
+        "sudo sysctl --system"
+      ],
+      "verify": "sysctl fs.suid_dumpable",
+      "impact": "Set-uid programs no longer produce core dumps.",
+      "authority": "Local file, or configuration management if it owns /etc/sysctl.d."
+    },
+    "manual.linux.15": {
+      "summary": "Restore ownership and permissions on /etc/passwd.",
+      "steps": [
+        "sudo chown root:root /etc/passwd",
+        "sudo chmod 644 /etc/passwd"
+      ],
+      "verify": "stat -c '%a %U:%G' /etc/passwd",
+      "impact": "Low. Confirm no service relies on wider access before changing.",
+      "authority": "Local filesystem; package updates may reset modes."
+    },
+    "manual.linux.16": {
+      "summary": "Restore ownership and permissions on /etc/shadow.",
+      "steps": [
+        "sudo chown root:shadow /etc/shadow",
+        "sudo chmod 640 /etc/shadow"
+      ],
+      "verify": "stat -c '%a %U:%G' /etc/shadow",
+      "impact": "Low. Confirm no service relies on wider access before changing.",
+      "authority": "Local filesystem; package updates may reset modes."
+    },
+    "manual.linux.17": {
+      "summary": "Restore ownership and permissions on /etc/ssh/sshd_config.",
+      "steps": [
+        "sudo chown root:root /etc/ssh/sshd_config",
+        "sudo chmod 600 /etc/ssh/sshd_config"
+      ],
+      "verify": "stat -c '%a %U:%G' /etc/ssh/sshd_config",
+      "impact": "Low. Confirm no service relies on wider access before changing.",
+      "authority": "Local filesystem; package updates may reset modes."
+    },
+    "manual.linux.18": {
+      "summary": "Restore ownership and permissions on /var/log/auth.log.",
+      "steps": [
+        "sudo chown syslog:adm /var/log/auth.log",
+        "sudo chmod 640 /var/log/auth.log"
+      ],
+      "verify": "stat -c '%a %U:%G' /var/log/auth.log",
+      "impact": "Low. Confirm no service relies on wider access before changing.",
+      "authority": "Local filesystem; package updates may reset modes."
+    },
+    "manual.linux.19": {
+      "summary": "Set a restrictive default umask (027 or stricter) for login sessions.",
+      "steps": [
+        "sudo sed -i 's/^UMASK.*/UMASK 027/' /etc/login.defs",
+        "grep -n '^UMASK' /etc/login.defs"
+      ],
+      "verify": "grep -n '^UMASK' /etc/login.defs",
+      "impact": "Newly created files are no longer world-readable; check shared-directory workflows.",
+      "authority": "Local file or configuration management."
+    },
+    "manual.linux.20": {
+      "summary": "Enable and verify system time synchronisation.",
+      "steps": [
+        "sudo timedatectl set-ntp true",
+        "timedatectl show -p NTPSynchronized"
+      ],
+      "verify": "timedatectl show -p NTPSynchronized",
+      "impact": "Clock may step on first sync; coordinate with time-sensitive services.",
+      "authority": "Local service, or your time-sync policy."
+    }
+  }
+}

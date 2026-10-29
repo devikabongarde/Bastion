@@ -1,0 +1,27 @@
+name: baselineguard-dev
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?Set POSTGRES_SUPERUSER_PASSWORD in the untracked .env file}
+      POSTGRES_DB: baselineguard
+      BG_MIGRATION_PASSWORD: ${BG_MIGRATION_PASSWORD:?Set BG_MIGRATION_PASSWORD in the untracked .env file}
+      BG_APP_PASSWORD: ${BG_APP_PASSWORD:?Set BG_APP_PASSWORD in the untracked .env file}
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - baselineguard-postgres:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d baselineguard"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  baselineguard-postgres:

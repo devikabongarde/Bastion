@@ -1,0 +1,366 @@
+{
+  "schema_version": "1.0",
+  "note": "Original project-authored remediation guidance.",
+  "templates": {
+    "manual.cisco.01": {
+      "summary": "Configure `ip ssh version 2`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure SSH version 2 is explicitly enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.02": {
+      "summary": "Execute `no ip http server`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure HTTP server is disabled.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects False.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.03": {
+      "summary": "Execute `ip http secure-server`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure secure HTTPS server is enabled if web management is required.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.04": {
+      "summary": "Execute `service password-encryption`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure 'service password-encryption' is enabled.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.05": {
+      "summary": "Execute `no ip source-route`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure IP source routing is disabled.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.06": {
+      "summary": "Execute `no cdp run`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure CDP is disabled globally or on unapproved interfaces.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.07": {
+      "summary": "Configure `banner motd ^...^`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure MOTD login banner is configured.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.08": {
+      "summary": "Configure `exec-timeout 10 0` on all line vty 0 15.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure no VTY line has unlimited exec-timeout configured.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects False.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.09": {
+      "summary": "Execute `spanning-tree portfast bpduguard default`.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Spanning Tree BPDU Guard is enabled by default on access ports.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.10": {
+      "summary": "Configure `switchport port-security` on access ports.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Port Security is enabled on managed switch interfaces.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.11": {
+      "summary": "Assign access ports to dedicated functional VLANs.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure default VLAN 1 is not used for active access switchports.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects 0.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.12": {
+      "summary": "Execute Cisco IOS XE hardening procedure #12.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #12 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.13": {
+      "summary": "Execute Cisco IOS XE hardening procedure #13.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #13 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.14": {
+      "summary": "Execute Cisco IOS XE hardening procedure #14.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #14 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.15": {
+      "summary": "Execute Cisco IOS XE hardening procedure #15.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #15 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.16": {
+      "summary": "Execute Cisco IOS XE hardening procedure #16.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #16 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.17": {
+      "summary": "Execute Cisco IOS XE hardening procedure #17.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #17 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.18": {
+      "summary": "Execute Cisco IOS XE hardening procedure #18.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #18 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.19": {
+      "summary": "Execute Cisco IOS XE hardening procedure #19.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #19 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.20": {
+      "summary": "Execute Cisco IOS XE hardening procedure #20.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #20 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.21": {
+      "summary": "Execute Cisco IOS XE hardening procedure #21.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #21 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.22": {
+      "summary": "Execute Cisco IOS XE hardening procedure #22.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #22 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.23": {
+      "summary": "Execute Cisco IOS XE hardening procedure #23.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #23 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.24": {
+      "summary": "Execute Cisco IOS XE hardening procedure #24.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #24 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.25": {
+      "summary": "Execute Cisco IOS XE hardening procedure #25.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #25 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.26": {
+      "summary": "Execute Cisco IOS XE hardening procedure #26.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #26 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.27": {
+      "summary": "Execute Cisco IOS XE hardening procedure #27.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #27 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.28": {
+      "summary": "Execute Cisco IOS XE hardening procedure #28.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #28 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.29": {
+      "summary": "Execute Cisco IOS XE hardening procedure #29.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #29 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    },
+    "manual.cisco.30": {
+      "summary": "Execute Cisco IOS XE hardening procedure #30.",
+      "steps": [
+        "Connect to appliance management console over secure SSH.",
+        "Enter configuration mode: `configure terminal`.",
+        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #30 is enforced.",
+        "Exit and save configuration: `copy running-config startup-config`."
+      ],
+      "verify": "Verify running configuration reflects True.",
+      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
+      "authority": "Local running-config, or central network management controller."
+    }
+  }
+}

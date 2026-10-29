@@ -1,0 +1,59 @@
+[project]
+name = "baselineguard-workspace"
+version = "0.1.0"
+description = "Deterministic configuration auditing platform"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+dependencies = []
+
+[tool.uv.workspace]
+members = [
+  "apps/api",
+  "apps/collector",
+  "apps/evaluator",
+  "apps/reporter",
+  "apps/scheduler",
+  "packages/adapters",
+  "packages/contracts",
+  "packages/credentials",
+  "packages/domain",
+  "packages/evidence",
+  "packages/persistence",
+  "packages/rule_engine",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[dependency-groups]
+dev = [
+  "httpx>=0.28,<1",
+  "hypothesis>=6.120,<7",
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "pyright>=1.1.396,<2",
+  "ruff>=0.11,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["apps/scheduler/src", "apps/reporter/src"]
+addopts = "-ra --strict-markers --strict-config"
+markers = ["integration: requires a configured PostgreSQL database", "live: requires an authorized lab target"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["apps/api/src", "apps/collector/src", "apps/evaluator/src", "apps/reporter/src", "apps/scheduler/src", "packages"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "ASYNC"]
+ignore = ["B008", "S101", "E501", "S602", "S603", "S607", "ASYNC230", "ASYNC251"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101", "S105", "S106"]
+"packages/contracts/src/baselineguard_contracts/common.py" = ["S105"]
+
+"tools/*.py" = ["E501", "S105", "S106", "S603", "S404", "E402"]
+"apps/api/src/baselineguard_api/routes/v1/pipeline.py" = ["E501", "E741"]

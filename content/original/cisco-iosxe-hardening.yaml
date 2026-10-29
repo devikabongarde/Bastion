@@ -1,0 +1,2721 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "org.baselineguard.cisco.iosxe",
+  "version": "1.0.0",
+  "publisher": "BaselineGuard project",
+  "license": "Apache-2.0",
+  "rights_reference": "Original project-authored organizational baseline. No benchmark text included.",
+  "engine_compatibility": ">=0.1.0 <2.0.0",
+  "benchmark": null,
+  "targets": {
+    "family": "cisco_ios_xe",
+    "version_range": ">=17.0 <=17.15",
+    "roles": [
+      "router",
+      "switch"
+    ]
+  },
+  "parameters": {},
+  "controls": [
+    {
+      "id": "org.cisco.mgmt.ssh_v2",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure SSH version 2 is explicitly enforced",
+      "severity": "high",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.01",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.mgmt.no_http",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure HTTP server is disabled",
+      "severity": "critical",
+      "description": "Evaluates `management.http_server.enabled` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.http_server.enabled",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.http_server.enabled",
+        "value": false
+      },
+      "expected": {
+        "fact": "management.http_server.enabled",
+        "operator": "eq",
+        "value": false
+      },
+      "evidence": [
+        "management.http_server.enabled",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.02",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.http_server.enabled": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.http_server.enabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.http_server.enabled": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.http_server.enabled": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.mgmt.https_enabled",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure secure HTTPS server is enabled if web management is required",
+      "severity": "medium",
+      "description": "Evaluates `management.https_server.enabled` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.https_server.enabled",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.https_server.enabled",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.https_server.enabled",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.https_server.enabled",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.03",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.https_server.enabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.https_server.enabled": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.https_server.enabled": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.https_server.enabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.mgmt.pwd_encryption",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure 'service password-encryption' is enabled",
+      "severity": "high",
+      "description": "Evaluates `management.console.password_encryption` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.console.password_encryption",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.console.password_encryption",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.console.password_encryption",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.console.password_encryption",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.04",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.console.password_encryption": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.console.password_encryption": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.console.password_encryption": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.console.password_encryption": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.net.no_source_route",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure IP source routing is disabled",
+      "severity": "high",
+      "description": "Evaluates `management.ip.source_route_disabled` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ip.source_route_disabled",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ip.source_route_disabled",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ip.source_route_disabled",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ip.source_route_disabled",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.05",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ip.source_route_disabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ip.source_route_disabled": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ip.source_route_disabled": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ip.source_route_disabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.net.no_cdp",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure CDP is disabled globally or on unapproved interfaces",
+      "severity": "medium",
+      "description": "Evaluates `management.cdp.global_disabled` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.cdp.global_disabled",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.cdp.global_disabled",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.cdp.global_disabled",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.cdp.global_disabled",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.06",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.cdp.global_disabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.cdp.global_disabled": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.cdp.global_disabled": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.cdp.global_disabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.log.banner",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure MOTD login banner is configured",
+      "severity": "low",
+      "description": "Evaluates `logging.banner.motd_present` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "logging.banner.motd_present",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "logging.banner.motd_present",
+        "value": true
+      },
+      "expected": {
+        "fact": "logging.banner.motd_present",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "logging.banner.motd_present",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.07",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "logging.banner.motd_present": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "logging.banner.motd_present": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "logging.banner.motd_present": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "logging.banner.motd_present": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.mgmt.vty_no_unlimited",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure no VTY line has unlimited exec-timeout configured",
+      "severity": "critical",
+      "description": "Evaluates `management.vty.unlimited_timeout_present` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.vty.unlimited_timeout_present",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.vty.unlimited_timeout_present",
+        "value": false
+      },
+      "expected": {
+        "fact": "management.vty.unlimited_timeout_present",
+        "operator": "eq",
+        "value": false
+      },
+      "evidence": [
+        "management.vty.unlimited_timeout_present",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.08",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.vty.unlimited_timeout_present": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.vty.unlimited_timeout_present": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.vty.unlimited_timeout_present": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.vty.unlimited_timeout_present": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.switch.bpduguard",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Spanning Tree BPDU Guard is enabled by default on access ports",
+      "severity": "high",
+      "description": "Evaluates `switch.spanning_tree.bpduguard_default` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "switch.spanning_tree.bpduguard_default",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "switch.spanning_tree.bpduguard_default",
+        "value": true
+      },
+      "expected": {
+        "fact": "switch.spanning_tree.bpduguard_default",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "switch.spanning_tree.bpduguard_default",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.09",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.spanning_tree.bpduguard_default": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.spanning_tree.bpduguard_default": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.spanning_tree.bpduguard_default": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "switch.spanning_tree.bpduguard_default": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.switch.port_security",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Port Security is enabled on managed switch interfaces",
+      "severity": "high",
+      "description": "Evaluates `switch.port_security.enabled` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "switch.port_security.enabled",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "switch.port_security.enabled",
+        "value": true
+      },
+      "expected": {
+        "fact": "switch.port_security.enabled",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "switch.port_security.enabled",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.10",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.port_security.enabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.port_security.enabled": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.port_security.enabled": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "switch.port_security.enabled": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.switch.no_vlan1_access",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure default VLAN 1 is not used for active access switchports",
+      "severity": "high",
+      "description": "Evaluates `switch.interfaces.vlan_1_access_count` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "switch.interfaces.vlan_1_access_count",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "switch.interfaces.vlan_1_access_count",
+        "value": 0
+      },
+      "expected": {
+        "fact": "switch.interfaces.vlan_1_access_count",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "switch.interfaces.vlan_1_access_count",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.11",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.interfaces.vlan_1_access_count": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.interfaces.vlan_1_access_count": {
+              "state": "PRESENT",
+              "value": 4
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "switch.interfaces.vlan_1_access_count": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "switch.interfaces.vlan_1_access_count": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_12",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #12 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.12",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_13",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #13 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.13",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_14",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #14 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.14",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_15",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #15 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.15",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_16",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #16 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.16",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_17",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #17 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.17",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_18",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #18 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.18",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_19",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #19 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.19",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_20",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #20 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.20",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_21",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #21 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.21",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_22",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #22 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.22",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_23",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #23 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.23",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_24",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #24 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.24",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_25",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #25 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.25",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_26",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #26 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.26",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_27",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #27 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.27",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_28",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #28 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.28",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_29",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #29 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.29",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.cisco.hardening.item_30",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Cisco IOS XE infrastructure hardening baseline control #30 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `management.ssh.version_2_only` on Cisco IOS XE network infrastructure.",
+      "rationale": "Independently authored organizational network baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "cisco_ios_xe"
+      },
+      "required_facts": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "management.ssh.version_2_only",
+        "value": true
+      },
+      "expected": {
+        "fact": "management.ssh.version_2_only",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "management.ssh.version_2_only",
+        "platform.family"
+      ],
+      "remediation_template": "manual.cisco.30",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "cisco_ios_xe"
+            },
+            "management.ssh.version_2_only": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "management.ssh.version_2_only": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

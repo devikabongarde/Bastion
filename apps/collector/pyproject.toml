@@ -1,0 +1,21 @@
+[project]
+name = "baselineguard-collector"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["baselineguard-adapters", "baselineguard-contracts", "baselineguard-domain", "baselineguard-evidence", "baselineguard-persistence", "baselineguard-rule-engine", "paramiko>=3.4,<5"]
+
+[tool.uv.sources]
+baselineguard-adapters = { workspace = true }
+baselineguard-contracts = { workspace = true }
+baselineguard-domain = { workspace = true }
+baselineguard-evidence = { workspace = true }
+baselineguard-persistence = { workspace = true }
+baselineguard-rule-engine = { workspace = true }
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/baselineguard_collector"]
+

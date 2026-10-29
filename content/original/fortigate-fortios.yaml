@@ -1,0 +1,2721 @@
+{
+  "schema_version": "1.0",
+  "pack_id": "org.baselineguard.fortinet.fortigate",
+  "version": "1.0.0",
+  "publisher": "BaselineGuard project",
+  "license": "Apache-2.0",
+  "rights_reference": "Original project-authored organizational baseline. No benchmark text included.",
+  "engine_compatibility": ">=0.1.0 <2.0.0",
+  "benchmark": null,
+  "targets": {
+    "family": "fortigate",
+    "version_range": ">=7.0 <=7.6",
+    "roles": [
+      "appliance_root_vdom",
+      "firewall"
+    ]
+  },
+  "parameters": {},
+  "controls": [
+    {
+      "id": "org.forti.admin.https_redirect",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure admin HTTPS redirect is enabled",
+      "severity": "high",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.01",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.admin.pre_login_banner",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure pre-login warning banner is enabled",
+      "severity": "low",
+      "description": "Evaluates `fortigate.system.pre_login_banner` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.pre_login_banner",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.pre_login_banner",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.pre_login_banner",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.pre_login_banner",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.02",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.pre_login_banner": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.pre_login_banner": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.pre_login_banner": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.pre_login_banner": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.admin.strong_crypto",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure strong cryptographic cipher suites are enforced",
+      "severity": "high",
+      "description": "Evaluates `fortigate.system.strong_crypto` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.strong_crypto",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.strong_crypto",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.strong_crypto",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.strong_crypto",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.03",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.strong_crypto": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.strong_crypto": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.strong_crypto": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.strong_crypto": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.admin.sport_custom",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure administrative HTTPS port is changed from default 443",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_sport` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_sport",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "ne",
+        "fact": "fortigate.system.admin_sport",
+        "value": 443
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_sport",
+        "operator": "ne",
+        "value": 443
+      },
+      "evidence": [
+        "fortigate.system.admin_sport",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.04",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_sport": {
+              "state": "PRESENT",
+              "value": 8443
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_sport": {
+              "state": "PRESENT",
+              "value": 443
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_sport": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_sport": {
+              "state": "PRESENT",
+              "value": 8443
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.admin.ssh_port_custom",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure administrative SSH port is changed from default 22",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_ssh_port` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_ssh_port",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "ne",
+        "fact": "fortigate.system.admin_ssh_port",
+        "value": 22
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_ssh_port",
+        "operator": "ne",
+        "value": 22
+      },
+      "evidence": [
+        "fortigate.system.admin_ssh_port",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.05",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_ssh_port": {
+              "state": "PRESENT",
+              "value": 2222
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_ssh_port": {
+              "state": "PRESENT",
+              "value": 22
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_ssh_port": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_ssh_port": {
+              "state": "PRESENT",
+              "value": 2222
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.admin.idle_timeout",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure administrator idle timeout is 15 or fewer minutes",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_idle_timeout` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_idle_timeout",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "lte",
+        "fact": "fortigate.system.admin_idle_timeout",
+        "value": 15
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_idle_timeout",
+        "operator": "lte",
+        "value": 15
+      },
+      "evidence": [
+        "fortigate.system.admin_idle_timeout",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.06",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_idle_timeout": {
+              "state": "PRESENT",
+              "value": 15
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_idle_timeout": {
+              "state": "PRESENT",
+              "value": 30
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_idle_timeout": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_idle_timeout": {
+              "state": "PRESENT",
+              "value": 15
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.fw.no_any_any_allow",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure no firewall policy permits uninspected ANY->ANY traffic",
+      "severity": "critical",
+      "description": "Evaluates `fortigate.firewall.any_any_allow_count` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.firewall.any_any_allow_count",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.firewall.any_any_allow_count",
+        "value": 0
+      },
+      "expected": {
+        "fact": "fortigate.firewall.any_any_allow_count",
+        "operator": "eq",
+        "value": 0
+      },
+      "evidence": [
+        "fortigate.firewall.any_any_allow_count",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.07",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.firewall.any_any_allow_count": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.firewall.any_any_allow_count": {
+              "state": "PRESENT",
+              "value": 3
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.firewall.any_any_allow_count": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.firewall.any_any_allow_count": {
+              "state": "PRESENT",
+              "value": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.fw.default_deny",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure firewall default deny rule is in place",
+      "severity": "critical",
+      "description": "Evaluates `fortigate.firewall.has_default_deny` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.firewall.has_default_deny",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.firewall.has_default_deny",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.firewall.has_default_deny",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.firewall.has_default_deny",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.08",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.firewall.has_default_deny": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.firewall.has_default_deny": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.firewall.has_default_deny": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.firewall.has_default_deny": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.log.syslog_enabled",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure remote syslog logging is enabled",
+      "severity": "high",
+      "description": "Evaluates `fortigate.logging.syslog_status` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.logging.syslog_status",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.logging.syslog_status",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.logging.syslog_status",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.logging.syslog_status",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.09",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.logging.syslog_status": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.logging.syslog_status": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.logging.syslog_status": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.logging.syslog_status": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_10",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #10 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.10",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_11",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #11 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.11",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_12",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #12 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.12",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_13",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #13 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.13",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_14",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #14 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.14",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_15",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #15 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.15",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_16",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #16 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.16",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_17",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #17 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.17",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_18",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #18 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.18",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_19",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #19 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.19",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_20",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #20 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.20",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_21",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #21 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.21",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_22",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #22 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.22",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_23",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #23 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.23",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_24",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #24 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.24",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_25",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #25 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.25",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_26",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #26 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.26",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_27",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #27 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.27",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_28",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #28 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.28",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_29",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #29 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.29",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "org.forti.hardening.item_30",
+      "revision": 1,
+      "origin": "organizational",
+      "title": "Ensure Fortinet FortiOS infrastructure hardening baseline control #30 is enforced",
+      "severity": "medium",
+      "description": "Evaluates `fortigate.system.admin_https_redirect` on FortiGate FortiOS firewall appliances.",
+      "rationale": "Independently authored organizational firewall baseline.",
+      "applicability": {
+        "op": "eq",
+        "fact": "platform.family",
+        "value": "fortigate"
+      },
+      "required_facts": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "assertion": {
+        "op": "eq",
+        "fact": "fortigate.system.admin_https_redirect",
+        "value": true
+      },
+      "expected": {
+        "fact": "fortigate.system.admin_https_redirect",
+        "operator": "eq",
+        "value": true
+      },
+      "evidence": [
+        "fortigate.system.admin_https_redirect",
+        "platform.family"
+      ],
+      "remediation_template": "manual.forti.30",
+      "tests": [
+        {
+          "id": "conforming",
+          "expect": "PASS",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        },
+        {
+          "id": "deviation",
+          "expect": "FAIL",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": false
+            }
+          }
+        },
+        {
+          "id": "unavailable",
+          "expect": "UNKNOWN",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "fortigate"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "UNAVAILABLE"
+            }
+          }
+        },
+        {
+          "id": "other-family",
+          "expect": "NOT_APPLICABLE",
+          "facts": {
+            "platform.family": {
+              "state": "PRESENT",
+              "value": "other_os"
+            },
+            "fortigate.system.admin_https_redirect": {
+              "state": "PRESENT",
+              "value": true
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
