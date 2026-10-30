@@ -149,10 +149,11 @@ def parse_umask_defaults(text: str) -> list[dict[str, Any]]:
             continue
         if stripped.upper().startswith("UMASK") and len(stripped.split()) >= 2:
             value = stripped.split()[1]
-            try:
-                return [fact("auth.umask.default", int(value, 8), FactState.PRESENT)]
-            except ValueError:
+            # The policy compares the umask's octal digits as written ("027" -> 27, "077" -> 77),
+            # matching the rule pack's own test vectors; it is not converted to its bit value.
+            if not value.isdigit() or any(digit in "89" for digit in value):
                 return [fact("auth.umask.default", None, FactState.UNSUPPORTED)]
+            return [fact("auth.umask.default", int(value, 10), FactState.PRESENT)]
     return [fact("auth.umask.default", None, FactState.UNAVAILABLE)]
 
 

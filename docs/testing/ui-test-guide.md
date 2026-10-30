@@ -25,7 +25,8 @@ Do these in order. If any step fails, stop and fix it before the demo.
 | S3 | Click **Sign in**, then click the **Ava** card under "Quick demo access" | You land on **Fleet posture**. The sidebar footer shows a green dot and "API connected" | ☐ |
 | S4 | Look at the Overview KPIs | Compliance %, Completeness %, Open findings and Assets are all numbers, not "—". "last assessment" is recent | ☐ |
 | S5 | Go to **Assets** | The table lists the fleet. `core-sw-01`, `edge-fw-01` and `lab-ubuntu-01` show **Live · SSH** with a **Pinned** host key. Your PC shows **Live · this machine** with **Not applicable** | ☐ |
-| S6 | Start the mock targets (see 1.3), then click **Scan all live (N)** on Assets | The button reads **Scanning…**. Within about 5–15 s a toast appears: "Live scan completed — results updated" (or "partial") | ☐ |
+| S6 | Start the mock targets (see 1.3), then click **Scan all live (N)** on Assets | The button reads **Scanning…**. Within about 5–15 s a toast appears: "Live scan completed — open Assessments to see every check" (or "partial") | ☐ |
+| S6b | Go to **Assessments** and click the newest run at the top of **Recent assessments** | A panel lists each scanned asset with pass/fail counts, the evidence digest, and every control with its expected and observed value. **This is where scan output lives** | ☐ |
 | S7 | Go to **Findings** and click any row | A drawer opens with "Expected vs. actual configuration", **Evidence** (sha256), **Remediation** and **Copy commands** | ☐ |
 | S8 | **Reports**: set Format to **PDF (text layout)**, click **Generate report**, then **Download** | Toast "Report generated from the latest results". A PDF downloads and opens | ☐ |
 | S9 | Press **Ctrl+K** | The command palette opens. Type "find", press Enter, and you land on Findings | ☐ |
@@ -175,7 +176,7 @@ Mark each row ✅ or ❌. "Signed in as X" means use **Quick demo access** unles
 | AS-13 | In a terminal, run `ssh-keygen -lf data\mock_ssh_host_rsa.key` | The `SHA256:…` part is identical to the UI value | ☐ |
 | AS-14 | Enter Username `audituser`, Password `auditpass`, then click **Trust this key & connect** | It shows "Pinning…", then the toast "lab-ubuntu-01 connected — host key pinned". The drawer closes and the row still shows **Pinned** and **Scan** | ☐ |
 | AS-15 | (Optional, needs a fresh endpoint) Create a site via **New site** (see 4.1) with CIDR `127.0.0.0/8` and port `2222`. Add a **Linux · live SSH** asset at `127.0.0.1:2222` in that site, then repeat AS-12 to AS-14 via **Connect** | It starts as **Not pinned**, then turns **Pinned** after trust, and the Action column shows **Scan** | ☐ |
-| AS-16 | Click **Scan** on `core-sw-01` | All Scan buttons disable. Toast "Live scan completed — results updated". **Last assessed** becomes "just now" | ☐ |
+| AS-16 | Click **Scan** on `core-sw-01` | All Scan buttons disable. Toast "Live scan completed — click the run below to see every check". **Last assessed** becomes "just now" | ☐ |
 | AS-17 | Your PC row (**Windows · this machine**, chip **Live · this machine**). Click **Scan** | It completes. Compliance % updates. Some controls are UNKNOWN unless the API is elevated | ☐ |
 | AS-18 | Stop `mock_targets.py`, then click **Scan** on `edge-fw-01` | Within seconds (FortiGate errors are not retried) the toast reads "Live scan partial — results updated", and the asset's controls show ERROR. The app stays usable. For `lab-ubuntu-01`, expect about 60 s first, because Linux SSH errors are retried after 20 s and then 40 s. Restart the mock afterwards | ☐ |
 
@@ -204,7 +205,7 @@ csv-bad-01,10.20.5.13,8080,linux,high,server
 |---|---|---|---|
 | R-01 | Open Assessments as ava | Left: "Recent assessments" ("Auto-refreshing") with Run, State, Targets, Source and Created columns. Right: the **Live scan** panel (chip "Real-time collection") and the **Submit evidence** panel (chip "Offline import") | ☐ |
 | R-02 | Live scan list | Each live asset has a checkbox. Mock devices show `· 127.0.0.1:2222` and your PC shows `· this machine`. Unready assets are greyed out with "connect on Assets". **Policy** reads `Enterprise Hardening Baseline (Multi-Platform) · rev N` | ☐ |
-| R-03 | Untick everything except your PC, then click **Scan 1 asset now** | The button shows `Scanning… Queued/Running`. Toast "Live scan completed — results updated". A new row "Live scan from console" appears with state COMPLETED, the target `<pc> NN% · N failed` and a Source chip | ☐ |
+| R-03 | Untick everything except your PC, then click **Scan 1 asset now** | The button shows `Scanning… Queued/Running`. Toast "Live scan completed — click the run below to see every check". A new row "Live scan from console" appears with state COMPLETED, the target `<pc> NN% · N failed` and a Source chip | ☐ |
 | R-04 | Tick all, then **Scan N assets now** (mock running) | All targets appear in one run. The Cisco, FortiGate and Ubuntu mocks each get a %. State COMPLETED (or PARTIAL if one failed) | ☐ |
 | R-05 | Untick all | The button reads "Scan 0 assets now" and is disabled | ☐ |
 | R-06 | **Submit evidence**: Target asset = `branch-rtr-01 — 10.20.10.1`, click **Sample: weak** | "Loaded **generated sample** · N facts" | ☐ |
@@ -212,7 +213,8 @@ csv-bad-01,10.20.5.13,8080,linux,high,server
 | R-08 | Click **Sample: hardened** for the same asset and evaluate | branch-rtr-01's compliance goes up. Findings resolve, and Overview's recent activity shows "Fixed & verified" | ☐ |
 | R-09 | Click **Upload JSON** and pick a non-JSON or random `.json` file | "That file is not a valid evidence bundle (JSON with a facts object)." | ☐ |
 | R-10 | Clear the target asset | **Evaluate evidence** is disabled | ☐ |
-| R-11 | **Evidence digest** | Assessment rows are **not clickable** and there is no run detail view (UI gap; the API returns a per-target `digest` but the UI doesn't show it). Check digests instead in the Findings drawer → **Evidence** (`sha256:…`) and in Reports → **Digest** | ☐ |
+| R-11 | Click any row in **Recent assessments** (or its name) | A panel opens with one section per asset: "N pass · N fail · N could not verify · N not applicable", the **Evidence digest** (`sha256` hex), and a table of every control with **Result**, **Control**, **Expected** and **Observed** (e.g. *Ensure VTY exec-timeout is 10 minutes or less* · `lte 600` · `1800`). Failures are listed first | ☐ |
+| R-12 | In that panel tick **Show not-applicable controls** | Controls from other platforms' packs appear as Not applicable. Untick to hide them again. Close with ✕ or Esc | ☐ |
 
 ### 2.7 Findings
 

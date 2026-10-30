@@ -171,6 +171,18 @@ export interface Assessment {
   targets: Array<{ asset: string; state: string; compliance_pct: number | null; failed: number | null; digest: string | null }>;
 }
 
+export interface ControlVerdict {
+  control_key: string; title: string; severity: string; status: string; reason_code: string;
+  expected: Record<string, unknown>; actual: Record<string, unknown> | null;
+}
+
+export interface AssessmentDetail extends Omit<Assessment, "targets"> {
+  targets: Array<{
+    asset: string; asset_id: string; state: string; error_code: string | null; compliance_pct: number | null;
+    summary: Record<string, unknown>; digest: string | null; engine_digest: string | null; results: ControlVerdict[];
+  }>;
+}
+
 export interface ExceptionItem {
   id: string; asset_id: string; asset_name: string; control_key: string; reason: string; compensating_controls: string;
   requested_by: string; requester_email: string; approved_by: string | null; approver_email: string | null;

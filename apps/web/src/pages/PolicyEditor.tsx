@@ -100,8 +100,8 @@ export default function PolicyEditor({ overview }: { overview: PolicyOverview })
               <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
                 <legend className="section-title">Excluded controls (stay visible in coverage)</legend>
                 <div style={{ maxHeight: 180, overflowY: "auto", display: "grid", gap: 6 }}>
-                  {overview.controls.map((c) => (
-                    <label key={c.key} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12 }}>
+                  {overview.controls.map((c, i) => (
+                    <label key={`${c.key}-${i}`} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12 }}>
                       <input type="checkbox" style={{ width: "auto" }} checked={c.key in excluded} onChange={(e) => setExcluded((cur) => { const next = { ...cur }; if (e.target.checked) next[c.key] = "Not applicable to this environment per owner review."; else delete next[c.key]; return next; })} />
                       {c.title}
                     </label>
@@ -146,8 +146,8 @@ export default function PolicyEditor({ overview }: { overview: PolicyOverview })
                       </tr>
                     </thead>
                     <tbody>
-                      {impactQuery.data.controls_impact.map((c) => (
-                        <tr key={c.control_id}>
+                      {impactQuery.data.controls_impact.map((c, i) => (
+                        <tr key={`${c.control_id}-${i}`}>
                           <td><b>{c.title}</b><br /><code className="cell-sub">{c.control_id}</code></td>
                           <td><Chip tone={c.prior_status === "PASS" ? "ok" : "fail"}>{c.prior_status}</Chip></td>
                           <td><Chip tone={c.projected_status === "PASS" || c.projected_status === "NOT_APPLICABLE" ? "ok" : "fail"}>{c.projected_status}</Chip></td>

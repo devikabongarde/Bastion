@@ -51,7 +51,7 @@ def test_real_ubuntu_output_with_partial_failures_still_normalizes() -> None:
     assert facts["auth.ssh.permit_root_login"].state is FactState.UNAVAILABLE
     assert facts["files.etc_shadow.mode"].value == "0640"
     assert facts["files.sshd_config.mode"].state is FactState.UNAVAILABLE
-    assert facts["auth.umask.default"].value == 0o22
+    assert facts["auth.umask.default"].value == 22
     assert facts["services.auditd.active"].state is FactState.PRESENT
     assert facts["services.auditd.active"].value is False
     assert facts["services.system_time.synchronized"].value is True
@@ -133,3 +133,15 @@ def test_legacy_without_password_spelling_is_recognised() -> None:
     )
     assert facts["auth.ssh.permit_root_login"].state is FactState.PRESENT
     assert facts["auth.ssh.permit_root_login"].value == "prohibit-password"
+
+
+def test_umask_is_compared_by_its_written_digits() -> None:
+    # The pack's control passes at >= 27 (its own vectors: 27 PASS, 26 FAIL), so the
+    # hardened value "027" must normalize to 27, not to its bit value 23.
+    def umask(text: str) -> Any:
+        return facts_by_id([output("linux.auth.umask_defaults", text)])["auth.umask.default"]
+
+    assert umask("UMASK 027\n").value == 27
+    assert umask("UMASK\t077\n").value == 77
+    assert umask("UMASK 022\n").value == 22
+    assert umask("UMASK 089\n").state is FactState.UNSUPPORTED

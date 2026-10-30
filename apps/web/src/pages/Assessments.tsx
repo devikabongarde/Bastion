@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiGet, apiWrite, type Asset, type Assessment, type Page, type SampleBundle } from "../lib/api";
+import { apiGet, apiWrite, type Asset, type Assessment, type AssessmentDetail, type Page, type SampleBundle } from "../lib/api";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "../components/shadcn/sheet";
 import { hasRole, useActivePolicy, usePrincipal } from "../lib/hooks";
 import { ago, label, pct } from "../lib/format";
 import { Chip, Empty, ErrorNotice, Icon, PageHeading, Skeleton, StateChip, useToast } from "../components/ui";
@@ -9,6 +10,7 @@ export default function Assessments() {
   const principal = usePrincipal();
   const runs = useQuery({ queryKey: ["assessments"], queryFn: ({ signal }) => apiGet<{ items: Assessment[] }>("/api/v1/assessments", signal), refetchInterval: 4000 });
   const canScan = hasRole(principal.data?.roles, "scan_operator", "platform_admin");
+  const [openRun, setOpenRun] = useState<string | null>(null);
   return (
     <>
       <PageHeading title="Assessments" description="Submit configuration evidence for evaluation and track every run from request to result." />
@@ -24,8 +26,11 @@ export default function Assessments() {
                 <thead><tr><th scope="col" style={{ minWidth: 180 }}>Run</th><th scope="col">State</th><th scope="col">Targets</th><th scope="col">Source</th><th scope="col">Created</th></tr></thead>
                 <tbody>
                   {runs.data.items.map((run) => (
-                    <tr key={run.id}>
-                      <th scope="row">{run.reason}<span className="cell-sub"><code>{run.id.slice(0, 8)}</code></span></th>
+                    <tr key={run.id} onClick={() => setOpenRun(run.id)} style={{ cursor: "pointer" }} title="Open results">
+                      <th scope="row">
+                        <button type="button" style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer", textAlign: "left" }} onClick={(e) => { e.stopPropagation(); setOpenRun(run.id); }}>{run.reason}</button>
+                        <span className="cell-sub"><code>{run.id.slice(0, 8)}</code> · View results →</span>
+                      </th>
                       <td><StateChip state={run.status} /></td>
                       <td>{run.targets.map((t) => <div key={t.asset}>{t.asset} <span className="quiet">{t.compliance_pct !== null ? `${pct(t.compliance_pct)} · ${t.failed} failed` : label(t.state)}</span></div>)}</td>
                       <td><Chip tone={run.source} /></td>
@@ -44,7 +49,85 @@ export default function Assessments() {
           </div>
         ) : <section className="panel"><Empty icon="lock" title="Read-only access">Your role cannot submit evidence. Ask an administrator for the scan operator role.</Empty></section>}
       </div>
+      {openRun && <RunDetail runId={openRun} onClose={() => setOpenRun(null)} />}
     </>
+  );
+}
+
+const VERDICT_TONE: Record<string, string> = {
+  PASS: "pass", FAIL: "fail", ERROR: "fail", UNKNOWN: "PARTIAL", MANUAL_REQUIRED: "PARTIAL", NOT_APPLICABLE: "neutral",
+};
+
+function fmt(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+/** One run's verdicts, per asset: what was expected, what the device actually reported. */
+function RunDetail({ runId, onClose }: { runId: string; onClose: () => void }) {
+  const detail = useQuery({
+    queryKey: ["assessment", runId],
+    queryFn: ({ signal }) => apiGet<AssessmentDetail>(`/api/v1/assessments/${runId}`, signal),
+  });
+  const [showNa, setShowNa] = useState(false);
+  return (
+    <Sheet open onOpenChange={(open) => !open && onClose()}>
+      <SheetHeader>
+        <SheetTitle>{detail.data?.reason ?? "Assessment"}</SheetTitle>
+        <SheetDescription>
+          {detail.data ? <>Run <code>{detail.data.id.slice(0, 8)}</code> · {label(detail.data.status)} · {ago(detail.data.created_at)} · {detail.data.source}</> : "Loading results…"}
+        </SheetDescription>
+      </SheetHeader>
+      <SheetContent className="space-y-6">
+        {detail.isPending && <Skeleton rows={6} />}
+        {detail.isError && <ErrorNotice error={detail.error} />}
+        {detail.data && (
+          <>
+            <label className="quiet" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input type="checkbox" style={{ width: "auto" }} checked={showNa} onChange={(e) => setShowNa(e.target.checked)} />
+              Show not-applicable controls
+            </label>
+            {detail.data.targets.map((t) => {
+              const count = (s: string) => t.results.filter((r) => r.status === s).length;
+              const rows = t.results.filter((r) => showNa || r.status !== "NOT_APPLICABLE");
+              return (
+                <section key={t.asset_id} className="panel" style={{ padding: 16 }}>
+                  <div className="panel-head" style={{ alignItems: "baseline" }}>
+                    <h2>{t.asset}</h2>
+                    <span className="sub">{t.compliance_pct !== null ? `${pct(t.compliance_pct)} compliant` : label(t.state)}</span>
+                  </div>
+                  <p className="quiet" style={{ margin: "4px 0 8px" }}>
+                    {count("PASS")} pass · {count("FAIL")} fail · {count("UNKNOWN") + count("ERROR")} could not verify · {count("NOT_APPLICABLE")} not applicable
+                    {t.error_code && <> · <b>{t.error_code}</b></>}
+                  </p>
+                  {t.digest && <p className="quiet" style={{ fontSize: 12, wordBreak: "break-all" }}>Evidence digest <code>{t.digest}</code></p>}
+                  {t.results.length === 0 ? <Empty icon="scans" title="No verdicts">{t.error_code ? `Collection failed: ${t.error_code}` : "This target has not been evaluated."}</Empty> : (
+                    <div className="table-wrap">
+                      <table>
+                        <thead><tr><th scope="col">Result</th><th scope="col">Control</th><th scope="col">Expected</th><th scope="col">Observed</th></tr></thead>
+                        <tbody>
+                          {rows.map((r) => {
+                            const fact = typeof r.expected.fact === "string" ? r.expected.fact : null;
+                            return (
+                              <tr key={r.control_key}>
+                                <td><Chip tone={VERDICT_TONE[r.status] ?? "neutral"}>{label(r.status)}</Chip></td>
+                                <th scope="row">{r.title}<span className="cell-sub"><code>{r.control_key}</code> · {r.severity}</span></th>
+                                <td><code>{fmt(r.expected.operator)} {fmt(r.expected.value)}</code></td>
+                                <td><code>{fact && r.actual ? fmt(r.actual[fact]) : r.status === "NOT_APPLICABLE" ? "—" : label(r.reason_code)}</code></td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -70,7 +153,7 @@ function LiveScanPanel() {
   useEffect(() => {
     if (!running || !finalState) return;
     setRunning(null);
-    toast(finalState === "FAILED" ? "err" : "ok", `Live scan ${finalState.toLowerCase()} — results updated`);
+    toast(finalState === "FAILED" ? "err" : "ok", `Live scan ${finalState.toLowerCase()} — click the run below to see every check`);
     void Promise.all(["assessments", "overview", "findings", "assets"].map((key) => cache.invalidateQueries({ queryKey: [key] })));
   }, [running, finalState, toast, cache]);
 

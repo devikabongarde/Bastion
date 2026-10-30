@@ -83,6 +83,7 @@ These routes are for an out-of-process collector agent. The embedded workers do 
 | GET | `/api/v1/imports/sample` | any role | Generate a sample import bundle. Parameters: `profile` (hardened/mixed/weak), `variant` 0–2, `family` (ubuntu/windows_server/cisco_ios_xe/fortigate), `role` (router/switch). |
 | POST | `/api/v1/imports` | scan_operator, platform_admin | Offline import of normalized facts (`ImportBundle` + `policy_revision_id`). Float values are rejected (`422 FLOAT_FACT`). Creates a `source='import'` snapshot, run and target, and enqueues `EVALUATE`. |
 | GET | `/api/v1/assessments` | any role | The latest 50 runs with per-target state, compliance %, failed count and result digest. Not site-filtered. |
+| GET | `/api/v1/assessments/{run_id}` | any role | One run in full: per target the state, error code, compliance %, summary, semantic and engine digests, and every top-level control verdict (`control_key`, `title`, `severity`, `status`, `reason_code`, `expected`, `actual`), failures first. Powers the run panel on Assessments. |
 | GET | `/api/v1/exceptions` | any role | Exceptions with effective state (`EXPIRED` is computed) |
 | POST | `/api/v1/exceptions` | analyst, scan_operator, platform_admin | Request an exception `{asset_id, control_key, reason, compensating_controls, expires_at}`. A finding must exist (`422 NO_MATCHING_FINDING`). |
 | POST | `/api/v1/exceptions/{exception_id}/approve` | risk_approver, not the requester (`403 SELF_APPROVAL_DENIED`) | Approve a `REQUESTED` exception. Open findings for that control become `RISK_ACCEPTED`. |

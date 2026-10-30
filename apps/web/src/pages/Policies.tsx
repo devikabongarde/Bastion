@@ -28,8 +28,8 @@ export default function Policies() {
             <div className="table-wrap"><table>
               <thead><tr><th scope="col">Severity</th><th scope="col">Control</th><th scope="col">Origin</th><th scope="col">Passing</th><th scope="col">Failing</th><th scope="col">Plan</th></tr></thead>
               <tbody>
-                {policy.data.controls.map((c) => (
-                  <tr key={c.key}>
+                {policy.data.controls.map((c, i) => (
+                  <tr key={`${c.key}-${i}`}>
                     <td><SeverityChip severity={c.severity} /></td>
                     <th scope="row">{c.title}<span className="cell-sub">{c.rationale?.slice(0, 110)}</span></th>
                     <td><Chip tone="neutral">{label(c.origin)}</Chip></td>

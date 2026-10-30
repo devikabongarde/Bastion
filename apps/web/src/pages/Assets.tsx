@@ -53,7 +53,7 @@ function useLiveScan() {
   useEffect(() => {
     if (!scanId || !final) return;
     setScanId(null);
-    toast(final === 'FAILED' ? 'err' : 'ok', `Live scan ${final.toLowerCase()} — results updated`);
+    toast(final === 'FAILED' ? 'err' : 'ok', `Live scan ${final.toLowerCase()} — open Assessments to see every check`);
     void Promise.all(['assets', 'overview', 'findings', 'assessments'].map((key) => cache.invalidateQueries({ queryKey: [key] })));
   }, [scanId, final, toast, cache]);
   const start = useMutation({
@@ -75,6 +75,7 @@ export default function Assets() {
   const principal = usePrincipal();
   const cache = useQueryClient();
   const scan = useLiveScan();
+  const toast = useToast();
 
   const [adding, setAdding] = useState(false);
   const [creatingSite, setCreatingSite] = useState(false);
@@ -93,7 +94,11 @@ export default function Assets() {
   });
   const createSite = useMutation({
     mutationFn: (body: Record<string, unknown>) => apiWrite<Site>('/api/v1/sites', body),
-    onSuccess: async () => { setCreatingSite(false); await cache.invalidateQueries({ queryKey: ['sites'] }); },
+    onSuccess: async (site) => {
+      setCreatingSite(false);
+      toast('ok', `Site "${site.name}" created — now use Add asset and pick it as the site`);
+      await cache.invalidateQueries({ queryKey: ['sites'] });
+    },
   });
   const create = useMutation({
     mutationFn: (body: Record<string, unknown>) => apiWrite('/api/v1/assets', body),

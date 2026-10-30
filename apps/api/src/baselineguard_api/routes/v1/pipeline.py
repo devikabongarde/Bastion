@@ -744,6 +744,74 @@ def list_assessments(principal: PrincipalDep, db: DbDep) -> dict[str, Any]:
     return {"items": items}
 
 
+_STATUS_ORDER = {"FAIL": 0, "ERROR": 1, "UNKNOWN": 2, "MANUAL_REQUIRED": 3, "PASS": 4, "NOT_APPLICABLE": 5}
+
+
+@router.get("/assessments/{run_id}")
+def get_assessment(run_id: UUID, principal: PrincipalDep, db: DbDep) -> dict[str, Any]:
+    """Every control verdict of one run, per target, with what was expected and observed."""
+    _need(principal, ANY_ROLE)
+    run = db.execute(
+        select(ScanRun).where(ScanRun.org_id == principal.org_id, ScanRun.id == run_id)
+    ).scalar_one_or_none()
+    if run is None:
+        raise AppError(404, "NOT_FOUND", "Not found", "Assessment not found.")
+    titles: dict[str, str] = {}
+    for manifest in db.execute(
+        select(RulePack.manifest).where(RulePack.org_id == principal.org_id)
+    ).scalars():
+        for control in manifest.get("controls", []):
+            titles.setdefault(control["id"], control["title"])
+    rows = db.execute(
+        select(ScanTarget, Asset.name, Asset.id, ResultSet)
+        .join(Asset, and_(Asset.org_id == ScanTarget.org_id, Asset.id == ScanTarget.asset_id))
+        .outerjoin(ResultSet, and_(ResultSet.org_id == ScanTarget.org_id,
+                                   ResultSet.target_id == ScanTarget.id))
+        .where(ScanTarget.org_id == principal.org_id, ScanTarget.run_id == run.id)
+        .order_by(Asset.name)
+    ).all()
+    targets: list[dict[str, Any]] = []
+    for target, asset_name, asset_id, result_set in rows:
+        results: list[dict[str, Any]] = []
+        if result_set is not None:
+            for record in db.execute(
+                select(ControlResultRecord).where(
+                    ControlResultRecord.org_id == principal.org_id,
+                    ControlResultRecord.result_set_id == result_set.id,
+                    ControlResultRecord.parent_result_id.is_(None),
+                )
+            ).scalars():
+                results.append({
+                    "control_key": record.control_key,
+                    "title": titles.get(record.control_key, record.control_key),
+                    "severity": record.severity,
+                    "status": record.status,
+                    "reason_code": record.reason_code,
+                    "expected": record.expected,
+                    "actual": record.actual,
+                })
+        results.sort(key=lambda r: (_STATUS_ORDER.get(r["status"], 9), r["title"]))
+        summary = result_set.summary if result_set is not None else {}
+        targets.append({
+            "asset": asset_name,
+            "asset_id": str(asset_id),
+            "state": target.state,
+            "error_code": target.error_code,
+            "compliance_pct": _num(summary.get("evaluated_compliance_pct")),
+            "summary": summary,
+            "digest": result_set.semantic_digest if result_set is not None else None,
+            "engine_digest": result_set.engine_digest if result_set is not None else None,
+            "results": results,
+        })
+    return {
+        "id": str(run.id), "status": run.status, "reason": run.reason,
+        "created_at": run.created_at.isoformat(),
+        "finished_at": run.finished_at.isoformat() if run.finished_at else None,
+        "source": (run.scope_manifest or {}).get("source", "live"),
+        "targets": targets,
+    }
+
+
 # --------------------------------------------------------------------------- exceptions
 
 
