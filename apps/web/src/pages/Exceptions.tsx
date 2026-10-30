@@ -12,7 +12,7 @@ export default function Exceptions() {
   const decide = useMutation({
     mutationFn: ({ id, action }: { id: string; action: "approve" | "reject" | "revoke" }) => apiWrite(`/api/v1/exceptions/${id}/${action}`),
     onSuccess: async (_d, vars) => {
-      toast("ok", `Exception ${vars.action}d`);
+      toast("ok", `Exception ${{ approve: "approved", reject: "rejected", revoke: "revoked" }[vars.action]}`);
       await Promise.all(["exceptions", "findings", "overview"].map((k) => cache.invalidateQueries({ queryKey: [k] })));
     },
     onError: (error) => toast("err", error.message),

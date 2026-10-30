@@ -1,6 +1,8 @@
 # 🛡️ Bastion: Complete User Manual, Developer Guide & Demo Runbook
 
-> **System Overview:** **Bastion — Every Control. Verified.** is an enterprise-grade, deterministic CIS Benchmark Compliance & Configuration Hardening platform. It continuously audits heterogeneous operating systems (Linux, Windows Server/Workstation) and network appliances (Cisco IOS XE, Fortinet FortiOS) with zero AI/ML inference, tamper-evident SHA-256 hash chaining, multi-tenant PostgreSQL Row-Level Security (RLS), and dual-custody risk exception workflows. Features a premium Semgrep-inspired developer landing page and interactive verification sandbox.
+> **System Overview:** **Bastion — Every Control. Verified.** is a deterministic, CIS-style configuration compliance and hardening auditor (its 103 controls are original, project-authored rules, not licensed CIS Benchmark text). It continuously audits heterogeneous operating systems (Linux, Windows Server/Workstation) and network appliances (Cisco IOS XE, Fortinet FortiOS) with zero AI/ML inference, tamper-evident SHA-256 hash chaining, multi-tenant PostgreSQL Row-Level Security (RLS), and dual-custody risk exception workflows. Features a premium Semgrep-inspired developer landing page and interactive verification sandbox.
+
+> **More documentation:** [docs/README.md](docs/README.md) (index) · [Ubuntu lab onboarding runbook](docs/runbooks/ubuntu-lab-onboarding.md) · [Manual UI test guide](docs/testing/ui-test-guide.md) · [Demo-day runbook](docs/runbooks/demo-day.md)
 
 ---
 
@@ -55,6 +57,7 @@ corepack pnpm --filter @baselineguard/web dev
 BG_DEMO_LOGIN=true      # one-click demo sign-in (skips MFA)
 BG_LAB_TARGETS=true     # allow the loopback mock devices on 127.0.0.1:2222
 BG_EMBEDDED_WORKERS=true
+BG_WORKER_DATABASE_URL=...   # role not limited by RLS (local postgres superuser); see .env.example
 ```
 
 ---
@@ -65,7 +68,7 @@ BG_EMBEDDED_WORKERS=true
 # With Terminals 1 and 3 running:
 .\.venv\Scripts\python.exe tools/sync_demo.py --load
 ```
-It registers the current rule packs (**102 real controls**: Windows 32, Cisco IOS-XE 31, FortiGate 20, Ubuntu 20), publishes the
+It registers the current rule packs (**103 controls**: Windows 32, Cisco IOS-XE 31, FortiGate 20, Ubuntu 20), publishes the
 *Enterprise Hardening Baseline (Multi-Platform)* policy, adds Windows Server / Cisco router / FortiGate sample assets, and adds
 **live** assets — `core-sw-01` (Cisco switch), `edge-fw-01` (FortiGate), `lab-ubuntu-01` (Ubuntu) on the mock device, plus this
 Windows PC — with the mock device's host key pinned. `--load` imports sample evidence and runs a real live scan (≈5 s).
@@ -91,12 +94,12 @@ rowan    728156   (valid ~28s)
 ## 2. Web Application User Manual
 
 ### 2.1 Sign-In & Authentication
-1. Navigate to: **[http://127.0.0.1:5173](http://127.0.0.1:5173)**
+1. Navigate to **[http://127.0.0.1:5173](http://127.0.0.1:5173)** (the landing page) and click **Open console** (or **Sign in**), which opens `/login`.
 2. Enter the credentials:
    * **Organization**: `northwind`
    * **Username**: `ava` *(Platform Admin & Auditor)* or `rowan` *(Risk Approver)*
-   * **Password**: `BaselineGuard-Demo-2026`
-3. Click **Sign In**.
+   * **Password**: `BaselineGuard-Demo-2026` on this demo machine (pre-filled). A freshly seeded database gets a random password. Use the one stored in `data/demo-credentials.json`.
+3. Click **Continue**.
 4. When the **Authenticator Code** dialog appears, run `.\.venv\Scripts\python.exe tools/totp.py` and enter the 6-digit number displayed next to your username.
 
 **Quick demo sign-in (skips MFA):** set `BG_DEMO_LOGIN=true` in `.env` and restart the API. The sign-in page then shows **Quick demo access** buttons for `ava` and `rowan` — one click, no authenticator code. To *show* MFA quickly instead, click **Continue** and then **Auto-fill demo code** on the verify step (it types the live code and signs in in ~2 seconds). The password is still checked, every use is written to the audit log as `demo-password-only`, and the API refuses to start if this flag is set with `BG_ENVIRONMENT=production`.
@@ -106,11 +109,12 @@ rowan    728156   (valid ~28s)
 ### 2.2 Navigation Overview
 * **📊 Dashboard (`/`)**: High-level executive posture, fleet compliance percentage, open findings by severity, and drift telemetry.
 * **🖥️ Assets (`/assets`)**: Fleet management across Linux, Windows Server, Cisco switches/routers, and Fortinet firewalls. Includes the **Bulk CSV Importer**.
-* **📜 Policies (`/policies`)**: Active hardening baselines across 120 controls. Includes the **Preview Impact Drawer**.
+* **📜 Policies (`/policies`)**: The published baseline and its 103 controls. Policy drafts have a **Preview Impact** drawer.
 * **🔎 Assessments (`/assessments`)**: Detailed execution logs of audit runs, canonical evidence SHA-256 digests, and pass/fail states.
+* **⏱️ Schedules (`/schedules`)**: Cron schedules per site for live assets.
 * **⚠️ Findings (`/findings`)**: Granular compliance deviations, expected vs. actual values, and native CLI remediation scripts.
 * **🛡️ Exceptions (`/exceptions`)**: Dual-custody risk exemptions workflow. Submit compensatory controls and approve/reject risk waivers.
-* **📑 Reports (`/reports`)**: Generate signed, audit-proof PDF and JSON compliance exports.
+* **📑 Reports (`/reports`)**: Generate PDF, HTML, CSV and JSON reports. Each is stored encrypted, its SHA-256 is checked on download, and every download is audited.
 
 ---
 
@@ -119,26 +123,26 @@ rowan    728156   (valid ~28s)
 #### A. Bulk CSV Asset Import (Enterprise Scale)
 1. Navigate to **Assets** (`/assets`).
 2. Click the **"Import CSV"** button at the top right.
-3. Click **"Insert Sample Template"** to load a valid multi-platform batch.
-4. Click **"Validate CSV"**: Observe row-by-row syntax validation and dry-run preview (checks platform family, valid ports, and addresses).
-5. Click **"Commit Import"**: Records are committed atomically into PostgreSQL under the tenant's Row-Level Security envelope.
+3. Choose a **Default site**, then click **"Insert sample"** to load three valid rows (Linux server, FortiGate, Cisco switch).
+4. Click **"Validate rows"**. Each row is checked for category (windows/linux/firewall/router/switch), port within the site's allowed ports, a resolvable site, and duplicates. Invalid rows are listed as "Row N (name): …".
+5. Click **"Commit N assets"**. The valid rows are inserted in one transaction under the tenant's row-level security.
 
 #### B. Policy Hardening & Blast Radius Simulation
 1. Navigate to **Policies** (`/policies`).
-2. Select an active baseline (e.g. *Enterprise Hardening Baseline v1*).
-3. Click **"Preview Impact"**:
-   - The drawer analyzes the proposed control changes against the latest snapshot of every active asset in your fleet.
+2. Create a policy draft (or pick an existing draft) in the policy editor.
+3. Click **"Preview Impact"** on the draft:
+   - The drawer evaluates the draft's controls against the latest snapshot of every in-scope asset.
    - Shows total assets affected and how many controls will flip from `PASS` to `FAIL` before you publish.
 
 #### C. Risk Exception & Compensating Control (Dual-Custody)
 1. In **Findings** (`/findings`), find a failing control on a critical server (e.g. `ip_forward` or `password_length`).
-2. Click **"Request Exception"**:
+2. Open the finding and click **"Request exception"**:
    - Enter Business Justification: *"Legacy application dependency requires unencrypted backend port."*
    - Enter Compensating Controls: *"Firewall perimeter ACL restricts access exclusively to administrative jump hosts."*
-   - Set Expiration Date: (e.g. 60 days).
+   - Choose **Expires in** (7/30/60/90 days) and click **Submit for approval**.
 3. Log out and sign in as **`rowan`** (*Risk Approver*).
 4. Navigate to **Exceptions** (`/exceptions`) and click **"Approve"**.
-5. The finding is now formally exempt from the compliance denominator, signed with an audit trail.
+5. The finding becomes **RISK_ACCEPTED** (see Findings → Accepted). The decision is recorded in the audit log. The requester can never approve their own exception.
 
 ---
 
@@ -172,7 +176,9 @@ To demonstrate scanning network infrastructure (routers, switches, firewalls) wi
    .\.venv\Scripts\python.exe tools/mock_targets.py
    ```
 2. The daemon runs on `127.0.0.1:2222` with credentials `audituser` / `auditpass`.
-3. It emulates both **Ubuntu 22.04 LTS** and **Cisco IOS XE Catalyst 9300** network devices.
+3. It answers the exact read-only commands of **Ubuntu 22.04 LTS**, **Cisco IOS XE (Catalyst 9300, 17.12)** and **FortiGate 100F (FortiOS 7.4)**. All three use the same host key.
+
+To audit **real Ubuntu machines** on a lab network, follow [docs/runbooks/ubuntu-lab-onboarding.md](docs/runbooks/ubuntu-lab-onboarding.md).
 
 ### 4.2 Interactive Verification
 To show the evaluators that the mock target is a real, responsive SSH service:
@@ -198,7 +204,7 @@ Use this 6-act narrative script to guide your presentation.
 | **2:30 - 4:00** | **Act 3: Heterogeneous Fleet & Bulk Import** | Navigate to `/assets` and open CSV Import modal | *"Enterprise environments are diverse. Here you see Linux servers, Windows Domain Controllers, Fortinet firewalls, and Cisco switches. With our CSV Bulk Importer, sysadmins can import hundreds of assets with live syntax validation and dry-run previews."* |
 | **4:00 - 5:30** | **Act 4: Policy Impact Simulator** | Open `/policies` and click **"Preview Impact"** | *"Before a CISO pushes a stricter security policy, how do they know it won't break 50 servers? Our Policy Impact Engine simulates the blast radius against historical telemetry before publishing."* |
 | **5:30 - 7:00** | **Act 5: Dual-Custody Governance** | Log in as `rowan` on `/exceptions` | *"In the real world, you cannot fix 100% of issues immediately. BaselineGuard supports formal Risk Exceptions with compensating controls, expiration dates, and dual-custody approval so audits stay green legally."* |
-| **7:00 - 8:30** | **Act 6: Cryptographic Hash Chains** | Open `/assessments` and show evidence hashes | *"Every finding is sealed into a tamper-evident SHA-256 hash chain stored in PostgreSQL with Row-Level Security. If an attacker modifies the database, the chain breaks instantly."* |
+| **7:00 - 8:30** | **Act 6: Evidence Integrity** | Open a finding in `/findings` and show **Evidence** (`sha256:…`), then a report's digest in `/reports` | *"Every snapshot carries a SHA-256 digest of its normalized evidence, results are written to immutable tables, and every security action is appended to a per-organization SHA-256 audit hash chain that database triggers protect from edits."* |
 
 ---
 
@@ -208,11 +214,11 @@ Use this 6-act narrative script to guide your presentation.
 > **Answer:** *"LLMs are probabilistic and prone to hallucinations. In compliance and regulatory auditing (SOC 2, ISO 27001, PCI-DSS), non-deterministic outputs are disqualifying. An auditor requires mathematical determinism: given the same system configuration, the engine must return the exact same PASS/FAIL verdict 100 times out of 100. We reserve automation for pure-code deterministic evaluation."*
 
 #### Q2: "Can this tool modify or break my servers?"
-> **Answer:** *"No. BaselineGuard enforces a strict read-only audit philosophy. The adapters execute non-invasive inspection queries (e.g. `auditpol /get`, `show running-config`, `sysctl -a`). We generate native remediation code for sysadmins to review and apply, but we never push unauthorized configuration changes into production."*
+> **Answer:** *"No. BaselineGuard enforces a strict read-only audit philosophy. The adapters execute non-invasive inspection queries (e.g. `auditpol /get /category:* /r`, `show running-config`, `sysctl -n <specific keys>`, `sshd -T`). We generate native remediation code for sysadmins to review and apply, but we never push unauthorized configuration changes into production."*
 
 #### Q3: "How does it protect against insider database tampering?"
-> **Answer:** *"Every assessment snapshot generates a canonical JSON representation that is hashed with SHA-256 and linked to the previous scan's digest in a cryptographic hash chain. In addition, PostgreSQL Row-Level Security ensures that tenant data is isolated at the database engine level, preventing cross-organization data leakage even if an API route is compromised."*
+> **Answer:** *"Every snapshot's normalized facts are hashed with SHA-256, each result set records an engine digest that binds the policy, rule packs and snapshot, and those tables are immutable via database triggers. Every security-relevant action is also appended to a per-organization SHA-256 hash chain in the audit log. In addition, PostgreSQL Row-Level Security ensures that tenant data is isolated at the database engine level, preventing cross-organization data leakage even if an API route is compromised."*
 
 #### Q4: "How does this connect to real physical equipment?"
-> **Answer:** *"The exact same adapter classes (`WindowsReader`, `LinuxSSHReader`, `CiscoIOSXEReader`, `FortiGateReader`) connect to live physical devices over standard SSH (paramiko/netmiko) or WinRM HTTPS. Our mock daemon uses the exact same SSH protocol on port 2222, so transitioning from testing to a live data center rack requires only updating the IP address and credential in the Asset inventory."*
+> **Answer:** *"The same adapter classes (`UbuntuSSHReader`, `CiscoIOSXEReader`, `FortiGateReader`) connect to real devices over standard SSH (paramiko). The mock daemon speaks the same SSH protocol on port 2222. To move to real hardware, create a site whose allowed CIDRs and ports cover the device, add the asset, confirm and pin its host-key fingerprint with **Connect**, and scan. Windows is audited locally on the machine running Bastion (`WindowsReader`); remote WinRM collection is not implemented."*
 

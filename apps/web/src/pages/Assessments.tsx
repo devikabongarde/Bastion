@@ -66,7 +66,7 @@ function LiveScanPanel() {
     enabled: Boolean(running),
     refetchInterval: 1000,
   });
-  const finalState = status.data && ["COMPLETED", "PARTIAL", "FAILED", "CANCELED"].includes(status.data.status) ? status.data.status : null;
+  const finalState = status.data && ["COMPLETED", "PARTIAL", "FAILED", "CANCELED", "CANCELLED"].includes(status.data.status) ? status.data.status : null;
   useEffect(() => {
     if (!running || !finalState) return;
     setRunning(null);

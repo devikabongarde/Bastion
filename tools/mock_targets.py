@@ -38,7 +38,7 @@ MOCK_RESPONSES = {
         'ID_LIKE=debian\n'
         'VERSION_ID="22.04"\n'
     ),
-    "/usr/sbin/sshd -T": (
+    "/usr/sbin/sshd -T 2>/dev/null || /usr/bin/sudo -n /usr/sbin/sshd -T": (
         "permitrootlogin no\n"
         "passwordauthentication no\n"
         "x11forwarding no\n"

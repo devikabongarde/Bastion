@@ -87,6 +87,8 @@ def parse_sshd_effective(text: str) -> list[dict[str, Any]]:
             except ValueError:
                 facts.append(fact(fact_key, None, FactState.UNSUPPORTED))
         else:
+            if raw == "without-password":  # OpenSSH's legacy spelling, still printed by sshd -T
+                raw = "prohibit-password"
             if raw not in {"yes", "no", "prohibit-password", "forced-commands-only"}:
                 facts.append(fact(fact_key, None, FactState.UNSUPPORTED))
             else:

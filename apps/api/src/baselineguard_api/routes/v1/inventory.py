@@ -55,6 +55,8 @@ def _asset_query(principal: Principal, roles: set[str] = READ_ROLES):
 
 
 LIVE_SSH_ADAPTERS = {"linux-ssh", "cisco-iosxe", "fortigate-ssh"}
+# Mirrors ck_assets_category in the assets table.
+ASSET_CATEGORIES = frozenset({"windows", "linux", "firewall", "router", "switch"})
 
 
 def collection_mode(adapter_id: str) -> str:
@@ -380,7 +382,7 @@ class AssetCsvCommitRow(BaseModel):
     declared_role: str = "server"
     adapter_id: str = "linux-ssh"
     site_id: UUID
-    tags: list[str] = []
+    tags: dict[str, str] = Field(default_factory=dict)
 
 
 class AssetCsvCommitRequest(BaseModel):
@@ -436,11 +438,18 @@ def preview_asset_csv(
         address = row.get(header_map.get("address", ""), "").strip()
         port_raw = row.get(header_map.get("port", ""), "").strip()
         category = row.get(header_map.get("category", ""), "").strip().lower() or "linux"
+        if category == "network":  # accepted alias from earlier templates
+            category = "switch"
         criticality = row.get(header_map.get("criticality", ""), "").strip().lower() or "normal"
         role = row.get(header_map.get("declared_role", "") or header_map.get("role", ""), "").strip().lower() or "server"
         adapter = row.get(header_map.get("adapter_id", "") or header_map.get("adapter", ""), "").strip().lower()
         if not adapter:
-            adapter = "windows-local" if category == "windows" else ("cisco-iosxe" if category == "network" else "linux-ssh")
+            adapter = {
+                "windows": "windows-local",
+                "router": "cisco-iosxe",
+                "switch": "cisco-iosxe",
+                "firewall": "fortigate-ssh",
+            }.get(category, "linux-ssh")
 
         # Determine site
         site_raw = row.get(header_map.get("site", "") or header_map.get("site_name", "") or header_map.get("site_id", ""), "").strip()
@@ -468,8 +477,10 @@ def preview_asset_csv(
             except ValueError:
                 errors.append(f"Port '{port_raw}' is not an integer.")
 
-        if category not in {"linux", "windows", "network", "firewall"}:
-            errors.append(f"Category '{category}' must be one of: linux, windows, network, firewall.")
+        if category not in ASSET_CATEGORIES:
+            errors.append(
+                f"Category '{category}' must be one of: {', '.join(sorted(ASSET_CATEGORIES))}."
+            )
         if criticality not in {"critical", "high", "normal", "low"}:
             errors.append(f"Criticality '{criticality}' must be one of: critical, high, normal, low.")
 

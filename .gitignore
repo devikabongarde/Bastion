@@ -16,9 +16,11 @@ coverage/
 __pycache__/
 *.log
 *.tmp
-evidence/
+/evidence/
 data/
-reports/
+/reports/
 playwright-report/
 test-results/
 
+.pnpm-store/
+*.tsbuildinfo

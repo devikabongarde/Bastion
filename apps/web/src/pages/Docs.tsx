@@ -201,7 +201,7 @@ export default function Docs() {
             <Steps>
               <li>Open the Bastion console in your browser and choose <b>Sign in</b>.</li>
               <li>Enter your <b>Organization</b> (your workspace ID, e.g. <code>northwind</code>), your <b>Username</b> and <b>Password</b>.</li>
-              <li>Select <b>Enter Console</b>.</li>
+              <li>Select <b>Continue</b>.</li>
               <li>Enter the six-digit code from your authenticator app (Google Authenticator, 1Password, Authy, etc.).</li>
             </Steps>
             <Callout title="Lost your authenticator?">

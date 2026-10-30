@@ -1,37 +1,55 @@
-# Phase 1 threat model baseline
+# Threat model
 
-**Status:** Initial engineering draft; security review is an open Phase 0 gate.
+This page lists the assets Bastion protects, its trust boundaries, and the controls that exist in the current code. It is an engineering record, not a substitute for an independent security review, which has not been done.
 
-## Assets and trust boundaries
+## Assets
 
-- Target credentials, session and signing keys, collector identities, raw evidence, normalized facts, policy packs, scan results, tenant data, and the append-only audit chain.
-- Browser to API; API to PostgreSQL; collector to managed device; collector upload to API; parser/evaluator/report worker to untrusted device output; administrator to rule-pack import.
-- The API and database are not directly reachable from site networks. Remote collectors will use outbound mTLS only when the Phase 2 protocol is implemented.
+- Target credentials: sealed in `credentials.encrypted_secret`.
+- The local master key: `BG_MASTER_KEY_FILE`.
+- The session secret: `BG_SESSION_SECRET`.
+- Pinned host keys: `BG_KNOWN_HOSTS_FILE`.
+- Raw and normalized evidence: encrypted artifacts under `BG_EVIDENCE_ROOT`.
+- Results, findings and exceptions.
+- Rule packs and policies.
+- The per-organization audit chain.
 
-## Threats and current controls
+## Trust boundaries
 
-| Threat | Phase 1 control | Remaining verification |
+```mermaid
+flowchart LR
+  B[Browser] -- "same-origin JSON, cookie + X-CSRF-Token" --> API[FastAPI]
+  API -- "bg_api role, app.org_id per txn, forced RLS" --> PG[(PostgreSQL)]
+  W[Embedded workers] -- "worker role (cross-org)" --> PG
+  W -- "scope-checked, pinned-IP SSH, RejectPolicy" --> T[Targets]
+  W -- "local subprocess (windows-local)" --> H[Bastion host]
+  API & W -- "AES-256-GCM envelope" --> FS[(Evidence store)]
+  Admin[Seed tools / bootstrap] -- "superuser / local CLI" --> PG
+```
+
+## Threats and controls
+
+| Threat | Controls in code | Gaps |
 |---|---|---|
-| Cross-tenant reads or writes | Transaction-local organization ID, forced PostgreSQL RLS, composite tenant foreign keys, API site filters | Integration test two organizations using `bg_api` after PostgreSQL is available |
-| SSRF or DNS rebinding | Explicit site CIDR/DNS-suffix/port scope, every DNS answer authorized, one resolved IP pinned to the socket | Adversarial resolver/transport tests and live lab test |
-| SSH MITM or credential downgrade | Explicit known-hosts file and reject-on-miss; key and password are mutually exclusive; pinned IP socket with original host key name | Device host-key fixture and authorized lab test |
-| Malicious rule pack | Safe YAML loader, duplicate-key rejection, byte/depth/node bounds, no runtime code, JSON Schema validation | Property/fuzz coverage and resource-limit tests |
-| Secret leakage in device configuration | Cisco secret and certificate-line redaction before persistence; logging omits config payloads | Expand secret corpus and parser-aware tests for every adapter |
-| Mutable published policy or audit history | Database trigger blocks published policy edits; audit rows are append-only with hash chaining | Trigger behavior and chain verification integration tests |
-| Browser/API information leakage | Same-origin default, CSP/security headers, request IDs, sanitized problem responses, no local storage for credentials | Authentication/CSRF/MFA controls arrive in Phase 2 |
-| Unavailable or partial device evidence shown as compliant | Explicit PASS/FAIL/UNKNOWN/NOT_APPLICABLE/ERROR statuses; collection errors are not passes | Full collector completeness contracts and end-to-end result pipeline remain open |
+| Cross-tenant read/write | `org_id` on every tenant row; composite FKs; forced RLS keyed on transaction-local `app.org_id`; the API runtime role is `NOBYPASSRLS` and not the owner; site filters via `Principal.sites_for` | Workers and seed tools use a cross-org role (the dev superuser). `GET /assessments` is not site-filtered. |
+| SSRF / scanning outside authorization | Site `allowed_cidrs`/`allowed_ports`/`allowed_dns_suffixes`. Every resolved address is authorized. Loopback, link-local, multicast, reserved and CGNAT addresses are refused (loopback only with `BG_LAB_TARGETS` outside production). The socket connects to the pinned IP (no re-resolution). `/0` CIDRs are rejected. | CSV import commit does not re-check CIDR scope (collection still does) |
+| DNS rebinding | Resolve once, authorize all answers, connect to a pinned IP | — |
+| SSH man-in-the-middle | The fingerprint is shown before credentials are sent; it is re-read and compared at connect (`HOST_KEY_CHANGED`); the collector uses paramiko `RejectPolicy` with only the pinned file; a trust record is required (`TRUST_NOT_VERIFIED`) | Trust-on-first-use relies on a human comparing the fingerprint |
+| Command injection on targets | Fixed command tables; reader ids validated against an allow-list; no caller-supplied command text; Linux runs `exec` without a PTY | `windows-local` uses `shell=True` with constant strings only |
+| Target modification | Read-only commands only. Cisco sends only the session-local `terminal length/width`. Ubuntu needs only a sudoers rule for `/usr/sbin/sshd -T`. Remediation text is never executed. | `secedit /export` writes and deletes a temp file on the Windows host |
+| Hostile device output | 1 MiB output cap, reader timeouts, strict UTF-8 (Linux), parser line bounds, pagination/error detection (Cisco), facts typed via Pydantic | — |
+| Secret leakage in evidence | Cisco secret-line redaction before persistence; credentials sealed with org- and id-bound AAD; passwords never logged; report HTML/CSV escaping and formula protection | Redaction coverage for FortiGate/Linux output is limited to what the readers return |
+| Credential theft from the database | Credentials and TOTP secrets are AES-GCM sealed with the master key; `bg_api` cannot read `organizations` beyond id/slug/status | The master key is a local file. Anyone with filesystem access to `data/keys` can decrypt. |
+| Account takeover | Argon2 passwords; TOTP with replay protection; recovery codes; throttling (100/source, 20/account per 15 min); 5 attempts per challenge; sessions hashed, revocable, 12 h absolute / 30 min idle; `__Host-` Secure HttpOnly SameSite=Lax cookie | `BG_DEMO_LOGIN` bypasses MFA (blocked in production, audited) |
+| CSRF / clickjacking | HMAC CSRF token required on writes; `X-Frame-Options: DENY`; CSP on preview/production builds; CORS off by default and forbidden in production | — |
+| Tampering with history | Append-only triggers on `audit_events`, snapshots, artifacts, result sets, control results, finding events, manual reviews, schedule occurrences; published policies immutable; SHA-256 snapshot/engine/semantic digests; per-org audit hash chain | No chain verifier is shipped; a database superuser can still drop triggers |
+| Unsafe rule content | Safe YAML loader with duplicate-key rejection, size/depth/node bounds, JSON Schema validation, declarative expressions only; pack digest frozen into policies | Packs are registered by the superuser seed tools (no review workflow) |
+| Self-approval / insider risk | The policy author cannot publish their own draft; exception requesters cannot approve or reject their own exceptions; publication needs MFA within 5 minutes | Demo sessions count as MFA-verified |
+| Missing evidence reported as compliant | Explicit `UNKNOWN`/`ERROR`/`NOT_APPLICABLE`; a collection failure yields `ERROR`, never PASS; completeness is shown next to compliance | — |
+| Unauthorized job manipulation | Lease tokens fence worker completion; cancellation sets `cancel_requested_at`; the collector routes require scan_operator or platform_admin | Embedded workers do not recover expired leases |
 
-## Privilege and data handling assumptions
+## Operating assumptions
 
-- Collectors have read-only target accounts and receive one credential at a time; no writer credential is part of the audit collector.
-- Device output is untrusted input. Size limits and parsing isolation must be enforced before future evidence/report processing.
-- Runtime database identity is a distinct `NOBYPASSRLS`, non-owner role. Migrations use a separate owner role. Tenant context is transaction-local to prevent pooled-connection leakage.
-- The Phase 1 schema stores evidence hashes and typed result data foundations; encrypted evidence storage, collector signatures, credential brokering, and formal retention workflows are not yet implemented.
-- No raw benchmark text or CIS mapping is included. Original rule content remains labeled organizational until rights review approves any mapping.
-
-## Release-blocking review items
-
-1. Security reviewer signs off on tenant context, database role grants, SSRF controls, host key handling, parser limits, and audit integrity.
-2. Run adversarial cross-tenant and collector-scope tests against PostgreSQL using the runtime role.
-3. Complete the synthetic secret corpus and tampered-bundle tests before claiming the Phase 1 evidence acceptance criterion.
-4. Record exact authorized Ubuntu and IOS XE lab builds and exercise the read-only adapters; no fixture result substitutes for this evidence.
+- Run only against systems you are authorized to audit, with dedicated read-only accounts.
+- Never enable `BG_DEMO_LOGIN` or `BG_LAB_TARGETS` outside a demo or lab. The settings validator refuses both in `production`.
+- Keep `.env`, `data/keys/`, `data/demo-credentials.json` and `data/known_hosts` out of Git. `.gitignore` excludes `.env*` and `data/`.
+- Give the worker a dedicated, minimally privileged cross-org role in any shared deployment, not the PostgreSQL superuser.

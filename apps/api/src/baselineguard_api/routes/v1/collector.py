@@ -221,6 +221,8 @@ def fail_collector_job(
     db: DbDep,
 ) -> dict[str, Any]:
     """Collector records collection failure."""
+    if not principal.roles.intersection({"scan_operator", "platform_admin"}):
+        raise AppError(403, "FORBIDDEN", "Forbidden", "Only authorized collector agents may fail jobs.")
     job = db.execute(
         select(Job)
         .where(Job.id == job_id, Job.org_id == principal.org_id)

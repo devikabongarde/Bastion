@@ -255,7 +255,7 @@ def load(base: str) -> None:
     print(f"  live scan queued for {len(live)} assets (run {run['scan_id'][:8]})")
     for _ in range(90):
         state = client.get(f"/api/v1/scans/{run['scan_id']}", headers=headers).json()
-        if state["status"] in {"COMPLETED", "PARTIAL", "FAILED", "CANCELED"}:
+        if state["status"] in {"COMPLETED", "PARTIAL", "FAILED", "CANCELED", "CANCELLED"}:
             print(f"  live scan finished: {state['status']}")
             break
         time.sleep(1)

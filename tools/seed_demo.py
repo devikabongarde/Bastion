@@ -48,10 +48,10 @@ ASSETS = [
     ("edge-fw-01", "firewall", "firewall", "critical", "10.20.0.1", 443, "fortigate-fixture",
      {"vendor": "fortinet", "family": "fortigate", "version": "7.4", "role": "firewall", "stable_device_id": "edge-fw-01"},
      "mixed", 0, "fortigate"),
-    ("core-sw-01", "network", "switch", "critical", "10.20.0.2", 22, "cisco-iosxe-fixture",
+    ("core-sw-01", "switch", "switch", "critical", "10.20.0.2", 22, "cisco-iosxe-fixture",
      {"vendor": "cisco", "family": "cisco_ios_xe", "version": "17.12", "role": "switch", "stable_device_id": "core-sw-01"},
      "hardened", 0, "cisco_ios_xe"),
-    ("branch-rtr-01", "network", "router", "high", "10.20.10.1", 22, "cisco-iosxe-fixture",
+    ("branch-rtr-01", "router", "router", "high", "10.20.10.1", 22, "cisco-iosxe-fixture",
      {"vendor": "cisco", "family": "cisco_ios_xe", "version": "17.12", "role": "router", "stable_device_id": "branch-rtr-01"},
      "weak", 0, "cisco_ios_xe"),
 ]

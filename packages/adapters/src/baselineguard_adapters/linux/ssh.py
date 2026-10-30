@@ -18,7 +18,11 @@ MAX_READER_BYTES = 1_048_576
 LINUX_READERS: dict[str, str] = {
     "linux.identity.uname": "/usr/bin/uname -srm",
     "linux.identity.os_release": "/usr/bin/cat /etc/os-release",
-    "linux.ssh.effective_config": "/usr/sbin/sshd -T",
+    # `sshd -T` must read the host keys, so an unprivileged audit account falls back to a
+    # sudoers grant for exactly this command (see tools/ubuntu_lab_setup.sh).
+    "linux.ssh.effective_config": (
+        "/usr/sbin/sshd -T 2>/dev/null || /usr/bin/sudo -n /usr/sbin/sshd -T"
+    ),
     "linux.kernel.security_sysctl": (
         "/usr/sbin/sysctl -n kernel.randomize_va_space fs.suid_dumpable "
         "net.ipv4.ip_forward net.ipv4.conf.all.accept_redirects "
@@ -134,8 +138,9 @@ class UbuntuSSHReader:
                     raise CollectionError("READER_TIMEOUT")
                 time.sleep(0.005)
             exit_code = channel.recv_exit_status()
-            if error_output:
-                raise CollectionError("READER_REPORTED_ERROR")
+            # A failing read (missing file, unprivileged sshd -T, absent service) is kept with
+            # its exit code; the normalizer reports the affected facts as unavailable instead
+            # of one host-specific gap aborting the whole collection.
             text_value = bytes(output).decode("utf-8", errors="strict")
             return ReadOutput(
                 reader_id=reader_id,

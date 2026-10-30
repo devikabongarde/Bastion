@@ -121,7 +121,9 @@ export async function apiWrite<T>(path: string, body?: unknown, options?: { meth
   const payload: unknown = response.status === 204 ? null : await response.json().catch(() => null);
   if (!response.ok) {
     const problem = payload as Partial<Problem> | null;
-    throw new ApiError(response.status, problem?.code ?? "HTTP_ERROR", problem?.detail ?? "The request could not be completed.", problem?.request_id ?? "unknown");
+    const fields = [...new Set((problem?.errors ?? []).map((e) => e.field.replace(/^body\./, "")))];
+    const detail = problem?.detail ?? "The request could not be completed.";
+    throw new ApiError(response.status, problem?.code ?? "HTTP_ERROR", fields.length ? `${detail} Check: ${fields.join(", ")}.` : detail, problem?.request_id ?? "unknown");
   }
   return payload as T;
 }

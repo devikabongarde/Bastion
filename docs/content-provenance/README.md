@@ -1,34 +1,65 @@
-# Rule content provenance
+# Rule content and provenance
 
-## Content shipped in this repository
+All shipped rule content is **original, project-authored organizational guidance** under Apache-2.0. Every control has `origin: organizational`, and every pack has `benchmark: null`. The packs contain no CIS Benchmark text, recommendation numbers or benchmark mappings, so they must not be presented as a licensed CIS Benchmark implementation. "CIS-style" describes the approach (typed, deterministic hardening checks), not the source.
 
-`content/original/phase1-linux.yaml` is a small, original Ubuntu 22.04 demonstration pack. It is labeled organizational, contains no CIS recommendation text or mappings, and is not a CIS Benchmark implementation. Its presence does not establish that its reader facts are currently collected by a complete production scan pipeline. Review its schema and fixtures before use.
+## Packs in `content/original/`
 
-The JSON Schema at `content/schemas/rule-pack.schema.json` defines the declarative pack format. `packages/rule_engine` validates the pack structure and bounds rule expression depth/node count; rules cannot submit arbitrary shell commands or executable code. The pack schema's fixture expectations should be replayed in tests before any change is accepted.
+The files carry a `.yaml` extension. The three generated packs are written as JSON, which is valid YAML.
 
-## Provenance required before adding content
+| File | `pack_id` | Version | Target family / roles (`version_range` is metadata only) | Controls | Severity mix | Remediation catalog |
+|---|---|---|---|---|---|---|
+| `phase1-linux.yaml` | `org.baselineguard.linux.phase1` | 0.2.0 | `ubuntu` · server, desktop (`>=20.04 <23.0`) | **20** | 1 critical, 6 high, 12 medium, 1 low | `content/remediation/linux-phase1.json` (20 templates) |
+| `windows-server-2019.yaml` | `org.baselineguard.windows.server2019` | 1.1.0 | `windows_server` (applicability also matches `windows`) · standalone, member_server, domain_controller, workstation (`>=2019`) | **32** | 4 critical, 17 high, 10 medium, 1 low | `windows-server-2019.json` (32) |
+| `cisco-iosxe-hardening.yaml` | `org.baselineguard.cisco.iosxe` | 1.1.0 | `cisco_ios_xe` · router, switch (`>=16.9 <=17.15`) | **31** | 6 critical, 16 high, 8 medium, 1 low | `cisco-iosxe-hardening.json` (31) |
+| `fortigate-fortios.yaml` | `org.baselineguard.fortinet.fortigate` | 1.1.0 | `fortigate` · appliance_root_vdom, firewall (`>=7.0 <=7.6`) | **20** | 4 critical, 7 high, 6 medium, 3 low | `fortigate-fortios.json` (20) |
+| **Total** | | | | **103** | | 103 templates |
 
-Every pack release must preserve a manifest containing at minimum:
+Counts come from the `controls` arrays in the files.
 
-- stable pack id, semantic version, exact content digest, publisher and license;
-- target family, version range, roles, and engine compatibility;
-- source benchmark publisher/product/version/profile only when applicable;
-- recommendation-level mapping, exact source rights/reference, reviewer and review date for mapped rules;
-- original vs. vendor-guidance vs. mapped origin for every control;
-- change log, applicability explanation, required facts, expected typed value, remediation procedure, evidence fields and pass/fail/unknown fixtures;
-- source artifact identity and hash retained in the private provenance record if redistribution is not allowed.
+## Pack format and validation
 
-Do not copy CIS text, mappings, benchmark identifiers or derived recommendation content into the repository or a distributable artifact until its license and redistribution rights have been reviewed. Keep private organization content separate from the public original pack. A license label alone is not legal review.
+- The schema is `content/schemas/rule-pack.schema.json` (JSON Schema 2020-12).
+- Each pack has:
+  - manifest fields: `schema_version`, `pack_id`, `version`, `publisher`, `license`, `rights_reference`, `engine_compatibility`, `benchmark`, `targets`, `parameters`;
+  - `controls[]`, each with `id`, `revision`, `title`, `description`, `rationale`, `severity`, `origin`, `applicability`, `assertion`, `required_facts`, `evidence`, `expected`, `remediation_template` and embedded `tests` (fixture cases).
+- `baselineguard_rule_engine.packs.load_rule_pack` loads a pack with these safeguards:
+  - a YAML safe loader that rejects duplicate keys;
+  - size, depth and node limits: ≤1 MiB, depth ≤32, ≤10,000 nodes;
+  - validation against the schema;
+  - control ids must be unique.
 
-## Review and release sequence
+  Packs contain declarative expressions only; no commands or code.
+- **Pack digest.** `semantic_digest(manifest)` is the SHA-256 of the canonical JSON of the manifest. It is stored in `rule_packs.digest` and frozen into `policy_pack_links.pack_digest`. A scan or import refuses to run if a linked pack's digest no longer matches (`POLICY_CONTENT_UNAVAILABLE`).
+- **Applicability.** Controls apply by fact, normally `platform.family` (plus `platform.role` for some Cisco controls). `targets.version_range` is not evaluated.
 
-1. Resolve source rights and document the permitted use.
-2. Freeze the exact product/build/profile and collection fields in a compatibility record.
-3. Author the smallest deterministic rule using only supported facts and bounded operators.
-4. Add fixtures for each result status, missing evidence, unsupported applicability, conflicts and malformed evidence.
-5. Have a second reviewer confirm applicability, severity, expected value, remediation safety and provenance.
-6. Replay all pack fixtures, calculate the canonical semantic digest, and review coverage/exclusions.
-7. Publish a new immutable version. Never mutate a published pack or rewrite an existing audit's provenance.
-8. Canary the new version, inspect changed results, then promote or revoke while keeping old run records reproducible.
+## How packs are built
 
-No AI/ML or external paid service participates in content authoring, evaluation or release decisions.
+- **Windows, Cisco and FortiGate** packs, and their remediation catalogs, are generated by `tools/build_rule_packs.py`:
+
+  ```powershell
+  .\.venv\Scripts\python.exe tools/build_rule_packs.py
+  ```
+
+  The script builds each control from a definition table and asserts that control ids are unique and that no two controls assert the same fact. It validates each pack against the schema, then writes `content/original/<pack>.yaml` and `content/remediation/<pack>.json`. Every generated pack is stamped with `PACK_VERSION = "1.1.0"`.
+- **Ubuntu (`phase1-linux.yaml`)** is hand-authored and is not touched by the build script.
+- Remediation templates are guidance text and commands for a human to review. Bastion never executes them. The API merges every `content/remediation/*.json` into one catalog when it renders findings and reports.
+
+## How packs are registered
+
+No API route ingests packs. `GET /api/v1/packs` is read-only, and the runtime `bg_api` role has only `SELECT` on `rule_packs`. Packs are registered with the PostgreSQL superuser by the development seed tools:
+
+| Tool | What it does |
+|---|---|
+| `tools/seed_demo.py` | On first run, loads all four packs, inserts them as `approved` `rule_packs` with their semantic digest, and publishes the policy "Enterprise Hardening Baseline (Multi-Platform)" (author `ava`, approver `rowan`) linking all four. |
+| `tools/sync_demo.py` | Idempotent. Inserts any pack whose (`pack_id`, `version`) is not yet registered. Stops with "changed content; bump its version" if a registered version's digest differs. Publishes a new policy revision if no published policy matches the current set of pack digests. |
+
+**When you change a pack:** bump its `version` (for generated packs, `PACK_VERSION` in `build_rule_packs.py`), rebuild, then run `tools/sync_demo.py` to register it and publish a policy that uses it. Existing result sets keep their old `engine_digest` and policy references, so they can still be reproduced.
+
+## Before adding third-party or benchmark-derived content
+
+- Resolve and record redistribution rights. A license label alone is not legal review.
+- Keep `origin` accurate per control.
+- Do not commit CIS text, numbering or mappings until rights are cleared.
+- Record the source product/version and reviewer.
+- Add pass/fail/unknown fixtures (see `tests/unit/test_rule_engine.py` and `test_extended_rule_packs.py`).
+- Publish a new immutable version instead of editing a registered one.

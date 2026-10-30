@@ -1,71 +1,111 @@
-# BaselineGuard
+# Bastion: every control, verified
 
-BaselineGuard is a self-hosted foundation for deterministic, evidence-centered configuration audits. It is designed to make assessment scope, evidence completeness, policy provenance, and unsupported capabilities visible. It does not change target configuration and does not use AI/ML or paid third-party APIs.
+Bastion (internal package name `baselineguard`) is a self-hosted, **deterministic configuration-compliance auditor**. It collects facts from Linux, Windows, Cisco IOS XE and FortiGate systems using fixed, read-only commands and evaluates them against versioned rule packs. It records every result with tamper-evident digests and keeps the evidence behind each verdict. It never changes target configuration, and no AI/ML takes part in evaluation.
 
-**This repository is an early development build, not a production-ready CIS auditor.** Offline evidence import, deterministic evaluation, findings lifecycle, exceptions, reports, the policy catalog and a polished web UI now work end to end locally. Live collection, Windows/network adapters, schedules, PDF export and required live validation remain incomplete. Deployment is intentionally pending.
+> Status: working demo build. The rule content is original, CIS-*style* organizational guidance, **not** licensed CIS Benchmark content. See [project status](docs/development/project-status.md) for what is verified and the known defects.
 
-## Quick demo (local, no live devices)
+## Features
 
-With Docker running (PostgreSQL on `127.0.0.1:55432`) and `.env` configured (see below):
+- **Live collection**
+  - Ubuntu over SSH (`linux-ssh`), Cisco IOS XE routers and switches (`cisco-iosxe`) and FortiGate (`fortigate-ssh`) via fixed command tables.
+  - Local Windows audit of the Bastion host (`windows-local`).
+  - Offline evidence import.
+- **Safe-by-default connections**
+  - Per-site CIDR, port and DNS allow-lists with pinned-IP connections.
+  - SSH host-key fingerprint confirmation and pinning; unknown or changed keys are refused.
+  - Credentials encrypted at rest.
+- **Deterministic evaluation:** 103 controls in 4 packs. Results are `PASS` / `FAIL` / `UNKNOWN` / `NOT_APPLICABLE` / `ERROR`. Missing evidence never counts as a pass.
+- **Evidence integrity**
+  - SHA-256 snapshot digests and an engine digest binding policy, packs and snapshot.
+  - Immutable result tables.
+  - A per-organization SHA-256 audit hash chain.
+- **Workflow**
+  - A findings lifecycle (open, resolve, reopen, owner, due date).
+  - Dual-custody risk exceptions with expiry.
+  - Policy drafts with impact preview and independent approval.
+  - Cron schedules.
+  - JSON, HTML, CSV and PDF reports.
+- **Multi-tenant:** `org_id` on every row with **forced PostgreSQL row-level security**, plus site-scoped roles.
+- **Authentication:** local password + TOTP MFA, recovery codes, CSRF-protected cookie sessions, rate limiting. An optional demo login exists for presentations.
+- **Web console:** a landing page and the Bastion console (Overview, Assets, Assessments, Findings, Exceptions, Schedules, Reports, Policies), with light and dark themes.
 
-```powershell
-powershell -File tools/dev.ps1        # migrates, seeds a demo org, starts API + UI
-python tools/totp.py                  # current authenticator codes
-```
+## Quick start (Windows, development)
 
-Sign in as organization `northwind`, user `ava` (administrator) or `rowan` (risk approver); the per-database demo password is kept in the ignored local file `data/demo-credentials.json` and is not printed. The demo imports sample evidence for six Ubuntu hosts through the real import, evaluate, findings pipeline (labeled `import`, never live). Embedded workers are a development convenience (`BG_EMBEDDED_WORKERS`); run the collector and evaluator as separate processes otherwise. If port 8000 or 5173 is taken by another service, pass `-ApiPort` / `-WebPort`; the dev script reuses healthy BaselineGuard servers and never terminates processes it did not start.
-
-## Current verified scope
-
-- Core database schema and Alembic migrations, tenant-aware PostgreSQL policies, inventory and scan-request APIs.
-- Local password + TOTP session authentication, one-time recovery codes, throttling, CSRF protection, site-scoped roles, and separate policy author/approver checks.
-- Declarative, bounded deterministic rule evaluation and an original, independently authored Ubuntu 22.04 demonstration pack (20 controls) with reviewed remediation guidance.
-- Offline evidence import, evaluator worker, immutable result sets, findings lifecycle, exceptions with independent approval and expiry.
-- Deterministic JSON/HTML/CSV reports with escaping, secret redaction and SHA-256 digests; download is audited.
-- React/TypeScript UI: overview with compliance beside completeness, assets, assessments, findings with detail drawer, exceptions, reports, policies; dark and light themes.
-
-The presence of a reader or a passing fixture test is not a live support claim. The only rule content checked in is an original demonstration pack, not CIS benchmark content. Review [`content/compatibility.yaml`](content/compatibility.yaml) and [`docs/adapters/compatibility.md`](docs/adapters/compatibility.md) before treating any platform as supported.
-
-## Requirements and gates
-
-[`PRD.md`](PRD.md) is the product and architecture source of truth. Licensed representative labs and content rights are required before platform support is claimed; those external gates are not satisfied here. Do not call the project production-ready until the PRD's G0-G5 criteria are evidenced.
-
-## Development prerequisites
-
-- Python 3.12+, `uv` (or the existing `.venv`)
-- Node.js 24+, Corepack/pnpm
-- PostgreSQL 17+ (Compose service binds to `127.0.0.1:55432`)
-
-Copy `.env.example` to `.env` and replace all passwords and the session secret with unique random values. Never commit `.env`.
+Prerequisites: Python 3.12+ with `uv`, Node 24 with pnpm via corepack, and Docker.
 
 ```powershell
 uv sync --all-packages --group dev
 corepack pnpm install --frozen-lockfile
-docker compose -f deploy/compose/compose.yaml up -d postgres
-uv run alembic upgrade head
-uv run uvicorn baselineguard_api.main:app --reload --host 127.0.0.1 --port 8000
-corepack pnpm --filter @baselineguard/web dev
+Copy-Item .env.example .env        # then replace every placeholder; see docs/development/local-setup.md
+docker compose -f deploy/compose/compose.yaml up -d
+.\.venv\Scripts\python.exe tools/seed_demo.py          # migrate + demo org "northwind" (users ava, rowan)
+
+# separate terminals:
+.\.venv\Scripts\python.exe -m baselineguard_api        # API :8000 (BG_EMBEDDED_WORKERS=true runs the workers)
+.\.venv\Scripts\python.exe tools/mock_targets.py       # optional mock SSH devices on 127.0.0.1:2222
+corepack pnpm --filter @baselineguard/web dev          # console :5173
+
+.\.venv\Scripts\python.exe tools/sync_demo.py --load   # full demo fleet + a live scan
+.\.venv\Scripts\python.exe tools/totp.py               # current MFA codes
 ```
 
-`BG_DATABASE_URL` is the restricted runtime role; `BG_MIGRATION_DATABASE_URL` the schema role. Workers claim jobs across organizations and need a role allowed to do so (`BG_WORKER_DATABASE_URL`; the demo seed uses the local PostgreSQL superuser, which is development-only). More: [`docs/development/local-postgres.md`](docs/development/local-postgres.md), [`docs/user-guide/first-run.md`](docs/user-guide/first-run.md).
+Open http://127.0.0.1:5173 and click **Open console** to reach `/login`. The demo password is stored in `data/demo-credentials.json`. With `BG_DEMO_LOGIN=true`, one-click demo sign-in is available. The full guide is in [docs/development/local-setup.md](docs/development/local-setup.md). To onboard real Ubuntu machines, see [docs/runbooks/ubuntu-lab-onboarding.md](docs/runbooks/ubuntu-lab-onboarding.md).
 
-## Checks
+## Architecture
+
+```
+Browser ──► FastAPI (auth, inventory, scans, findings, reports)
+               │  per-request txn with app.org_id → PostgreSQL (forced RLS)
+               └─ embedded workers: collector ─► adapters ─► normalize ─► encrypted snapshot
+                                     evaluator ─► rule engine ─► results / findings
+```
+
+A scan enqueues `COLLECT` jobs. The collector leases a job, checks the target against the site scope, runs the adapter and stores a digested snapshot. The evaluator then applies the published policy and writes immutable results and findings. Details: [architecture overview](docs/architecture/overview.md), [data model](docs/architecture/data-model.md), [API](docs/api/current-api.md), [adapters](docs/adapters/compatibility.md), [threat model](docs/architecture/threat-model.md). Index: [docs/README.md](docs/README.md).
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.12, FastAPI, SQLAlchemy 2, Alembic, Pydantic v2, psycopg 3, paramiko, argon2-cffi, cryptography (AES-GCM, Ed25519), structlog |
+| Database | PostgreSQL 17 with forced row-level security |
+| Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4, TanStack Query, React Router 7 |
+| Tooling | uv workspace, pnpm workspace, Ruff, Pyright, pytest, Vitest, Playwright, GitHub Actions |
+
+## Project layout
+
+| Path | Contents |
+|---|---|
+| `apps/api` | FastAPI service, auth, routes, embedded workers, schedule tick |
+| `apps/collector`, `apps/evaluator` | Collection and evaluation workers |
+| `apps/reporter`, `apps/scheduler` | Report renderers; cron and queue primitives |
+| `apps/web` | Bastion web console and landing page |
+| `packages/*` | adapters, contracts, credentials, domain, evidence, persistence, rule_engine |
+| `content/` | Rule packs, remediation catalogs, pack schema |
+| `migrations/` | Alembic revisions 0001–0006 |
+| `tools/` | Seed/sync, mock devices, TOTP, local audit, pack builder, Ubuntu lab setup and preflight |
+| `deploy/` | Dev PostgreSQL compose; Dockerfiles |
+| `docs/` | Documentation |
+
+See [docs/architecture/repository-map.md](docs/architecture/repository-map.md) for more detail.
+
+## Testing
 
 ```powershell
 uv run ruff check apps packages tests migrations tools
-uv run pytest
+uv run pyright
+uv run pytest                                   # integration tests need BG_DATABASE_URL + BG_MIGRATION_DATABASE_URL
 corepack pnpm --filter @baselineguard/web typecheck
 corepack pnpm --filter @baselineguard/web test
 corepack pnpm --filter @baselineguard/web build
 corepack pnpm --filter @baselineguard/web test:e2e
 ```
 
-PostgreSQL integration tests need `BG_MIGRATION_DATABASE_URL` (and `BG_DATABASE_URL`); otherwise they skip. See [`docs/development/verification.md`](docs/development/verification.md).
-
-## Repository map
-
-See [`docs/architecture/repository-map.md`](docs/architecture/repository-map.md). Status record: [`docs/development/project-status.md`](docs/development/project-status.md).
+On Windows, add `--basetemp=./test-results/pytmp` to pytest if the system temp directory is not accessible. See [docs/development/verification.md](docs/development/verification.md).
 
 ## Safety
 
-Only register authorized targets and scopes. Never use Telnet, disable host/TLS verification, place secrets in source control, or interpret missing evidence as a passing result. See [`SECURITY.md`](SECURITY.md).
+Register only systems you are authorized to audit, and use dedicated read-only accounts. Keep `.env` and `data/` out of Git. Never enable `BG_DEMO_LOGIN` or `BG_LAB_TARGETS` outside a demo or lab; both are refused in production. See [SECURITY.md](SECURITY.md).
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

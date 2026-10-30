@@ -49,7 +49,7 @@ function useLiveScan() {
     enabled: Boolean(scanId),
     refetchInterval: 1000,
   });
-  const final = status.data && ['COMPLETED', 'PARTIAL', 'FAILED', 'CANCELED'].includes(status.data.status) ? status.data.status : null;
+  const final = status.data && ['COMPLETED', 'PARTIAL', 'FAILED', 'CANCELED', 'CANCELLED'].includes(status.data.status) ? status.data.status : null;
   useEffect(() => {
     if (!scanId || !final) return;
     setScanId(null);
@@ -77,6 +77,7 @@ export default function Assets() {
   const scan = useLiveScan();
 
   const [adding, setAdding] = useState(false);
+  const [creatingSite, setCreatingSite] = useState(false);
   const [importingCsv, setImportingCsv] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -89,6 +90,10 @@ export default function Assets() {
     queryKey: ['sites'],
     queryFn: ({ signal }) => apiGet<Page<Site>>('/api/v1/sites', signal),
     enabled: adding || importingCsv,
+  });
+  const createSite = useMutation({
+    mutationFn: (body: Record<string, unknown>) => apiWrite<Site>('/api/v1/sites', body),
+    onSuccess: async () => { setCreatingSite(false); await cache.invalidateQueries({ queryKey: ['sites'] }); },
   });
   const create = useMutation({
     mutationFn: (body: Record<string, unknown>) => apiWrite('/api/v1/assets', body),
@@ -117,6 +122,7 @@ export default function Assets() {
   });
 
   const canEdit = hasRole(principal.data?.roles, 'inventory_editor', 'platform_admin');
+  const canCreateSite = hasRole(principal.data?.roles, 'platform_admin');
   const canConnect = hasRole(principal.data?.roles, 'platform_admin', 'credential_admin');
   const canScan = hasRole(principal.data?.roles, 'scan_operator', 'platform_admin');
   const posture = useMemo(() => new Map(overview.data?.posture.map((row) => [row.asset_id, row])), [overview.data]);
@@ -141,6 +147,11 @@ export default function Assets() {
           {canScan && readyLive.length > 0 && (
             <Button variant="outline" size="sm" disabled={scan.running || !scan.ready} onClick={() => scan.start.mutate(readyLive.map((a) => a.id))}>
               <Play className="w-4 h-4 mr-1.5" /> {scan.running ? 'Scanning…' : `Scan all live (${readyLive.length})`}
+            </Button>
+          )}
+          {canCreateSite && (
+            <Button variant="outline" size="sm" onClick={() => { createSite.reset(); setCreatingSite(true); }}>
+              <Network className="w-4 h-4 mr-1.5" /> New site
             </Button>
           )}
           {canEdit && (
@@ -179,6 +190,8 @@ export default function Assets() {
           <TableBody>
             {assetsQuery.isPending ? (
               <TableRow><TableCell colSpan={7} className="h-24 text-center text-[var(--body-muted)]">Loading assets…</TableCell></TableRow>
+            ) : assetsQuery.isError ? (
+              <TableRow><TableCell colSpan={7} className="h-32 text-center form-error">Assets could not be loaded: {assetsQuery.error.message}</TableCell></TableRow>
             ) : filtered.length === 0 ? (
               <TableRow><TableCell colSpan={7} className="h-32 text-center text-[var(--body-muted)]">No assets match.</TableCell></TableRow>
             ) : (
@@ -296,6 +309,41 @@ export default function Assets() {
         {connectId && <ConnectFlow asset={assets.find((a) => a.id === connectId)!} onDone={() => setConnectId(null)} />}
       </Sheet>
 
+      {/* Create site: the network allow-list that live collection is confined to */}
+      <Sheet open={creatingSite} onOpenChange={(open) => !open && setCreatingSite(false)}>
+        <SheetHeader>
+          <SheetTitle>New site</SheetTitle>
+          <SheetDescription>Bastion only connects to addresses and ports inside a site's scope.</SheetDescription>
+        </SheetHeader>
+        <SheetContent>
+          <form className="space-y-4" onSubmit={(e: FormEvent<HTMLFormElement>) => {
+            e.preventDefault();
+            const f = new FormData(e.currentTarget);
+            const list = (name: string) => String(f.get(name) ?? '').split(/[\s,]+/).filter(Boolean);
+            createSite.mutate({
+              name: f.get('name'),
+              timezone: f.get('timezone'),
+              scope: {
+                allowed_cidrs: list('cidrs'),
+                allowed_ports: list('ports').map(Number),
+                allowed_dns_suffixes: list('suffixes'),
+              },
+            });
+          }}>
+            <label className="field">Name<Input name="name" required placeholder="Ubuntu Lab" /></label>
+            <label className="field">Timezone<Input name="timezone" required defaultValue={Intl.DateTimeFormat().resolvedOptions().timeZone} /></label>
+            <label className="field">Allowed networks (CIDR)<Input name="cidrs" required placeholder="192.168.1.0/24" /></label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="field">Allowed ports<Input name="ports" required defaultValue="22" /></label>
+              <label className="field">DNS suffixes (optional)<Input name="suffixes" placeholder="lab.example.edu" /></label>
+            </div>
+            <p className="quiet">Separate multiple values with commas. Use the narrowest range that covers the lab machines.</p>
+            {createSite.isError && <p className="form-error">{createSite.error.message}</p>}
+            <Button type="submit" variant="primary" className="w-full" disabled={createSite.isPending}>{createSite.isPending ? 'Creating…' : 'Create site'}</Button>
+          </form>
+        </SheetContent>
+      </Sheet>
+
       {/* Register asset */}
       <Sheet open={adding} onOpenChange={(open) => !open && setAdding(false)}>
         <SheetHeader>
@@ -313,7 +361,9 @@ export default function Assets() {
             });
           }}>
             <label className="field">Site
-              <select name="site" required>{sites.data?.items.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select>
+              <select name="site" required>{sites.data?.items.map((x) => (
+                <option key={x.id} value={x.id}>{x.name} · {x.scope.allowed_cidrs.join(', ')} · port {x.scope.allowed_ports.join(', ')}</option>
+              ))}</select>
             </label>
             <label className="field">Name<Input name="name" required placeholder="web-prod-01" /></label>
             <div className="grid grid-cols-2 gap-3">
@@ -368,7 +418,7 @@ export default function Assets() {
             <div className="flex justify-between items-center">
               <span className="text-xs font-semibold text-[var(--body-muted)] uppercase">CSV</span>
               <button type="button" className="text-xs text-[var(--accent-text)] hover:underline" onClick={() => setCsvText(
-                'name,address,port,category,criticality,role\nprod-win-01,10.20.1.101,5986,windows,high,member_server\nedge-fw-02,10.20.0.4,443,firewall,critical,firewall\naccess-sw-02,10.20.0.12,22,switch,high,switch\n',
+                'name,address,port,category,criticality,role\napp-03,10.20.1.13,22,linux,high,server\nedge-fw-02,10.20.0.4,22,firewall,critical,firewall\naccess-sw-02,10.20.0.12,22,switch,high,switch\n',
               )}>Insert sample</button>
             </div>
             <textarea rows={6} value={csvText} onChange={(e) => setCsvText(e.target.value)} required
@@ -383,10 +433,13 @@ export default function Assets() {
                 <span>Validation</span>
                 <span className="font-bold text-[var(--accent-text)]">{previewData.valid_rows} / {previewData.total_rows} valid</span>
               </div>
+              {previewData.rows.filter((r: any) => !r.valid).map((r: any) => (
+                <p key={r.row_index} className="form-error">Row {r.row_index} ({r.name || 'unnamed'}): {r.errors.join(' ')}</p>
+              ))}
               <Button variant="primary" className="w-full" disabled={commitMutation.isPending || previewData.valid_rows === 0} onClick={() => commitMutation.mutate({
                 rows: previewData.rows.filter((r: any) => r.valid).map((r: any) => ({
                   name: r.name, address: r.address, port: r.port, category: r.category, criticality: r.criticality,
-                  declared_role: r.declared_role, adapter_id: r.adapter_id, site_id: r.site_id, tags: [],
+                  declared_role: r.declared_role, adapter_id: r.adapter_id, site_id: r.site_id, tags: {},
                 })),
               })}>
                 {commitMutation.isPending ? 'Saving…' : `Commit ${previewData.valid_rows} assets`}

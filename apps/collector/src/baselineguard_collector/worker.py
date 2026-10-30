@@ -36,7 +36,7 @@ from baselineguard_persistence.models import (
     ScanTarget,
     Site,
 )
-from sqlalchemy import select, update
+from sqlalchemy import and_, or_, select, update
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
@@ -100,7 +100,15 @@ class CollectorWorker:
                     select(Job)
                     .where(
                         Job.kind == "COLLECT",
-                        Job.state == "QUEUED",
+                        # RETRY_WAIT jobs come back once their backoff has elapsed;
+                        # otherwise a transient SSH failure leaves the scan running forever.
+                        or_(
+                            Job.state == "QUEUED",
+                            and_(
+                                Job.state == "RETRY_WAIT",
+                                Job.available_at <= datetime.now(UTC),
+                            ),
+                        ),
                         Job.cancel_requested_at.is_(None),
                     )
                     .order_by(Job.available_at, Job.id)
@@ -125,7 +133,7 @@ class CollectorWorker:
                         job.lease_token = None
                         job.lease_expires_at = None
                         job.available_at = datetime.now(UTC) + timedelta(
-                            seconds=30 * (2 ** job.attempt)
+                            seconds=10 * (2 ** job.attempt)
                         )
                     else:
                         self._fail_closed(db, job, lease_token, failure.code)

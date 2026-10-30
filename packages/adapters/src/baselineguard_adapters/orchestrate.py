@@ -101,9 +101,14 @@ def normalize_outputs(results: list[tuple[str, ReadOutput]]) -> list[NormalizedF
 
     sysctl = outputs.get("linux.kernel.security_sysctl")
     if sysctl is not None:
+        # Values are positional: if any key failed, the rest no longer line up, so trust
+        # the output only when every key was read.
         _add(
             facts,
-            parse_sysctl_multi(LINUX_READERS["linux.kernel.security_sysctl"], sysctl.text),
+            parse_sysctl_multi(
+                LINUX_READERS["linux.kernel.security_sysctl"],
+                sysctl.text if sysctl.exit_code == 0 else "",
+            ),
             sysctl,
         )
 
