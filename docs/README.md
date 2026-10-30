@@ -37,6 +37,7 @@ Bastion (internal package name `baselineguard`) is a deterministic, read-only co
 |---|---|
 | [runbooks/demo-day.md](runbooks/demo-day.md) | Startup sequence, pre-demo checklist, demo flow, recovery |
 | [runbooks/ubuntu-lab-onboarding.md](runbooks/ubuntu-lab-onboarding.md) | Onboarding real Ubuntu machines on a lab network, with troubleshooting by error code |
+| [runbooks/windows-lab-onboarding.md](runbooks/windows-lab-onboarding.md) | Onboarding a remote Windows 10/11 PC over the built-in OpenSSH Server |
 | [user-guide/first-run.md](user-guide/first-run.md) | Landing page → sign-in → console tour and first tasks |
 
 `USER_MANUAL.md` in the repository root is the presenter's manual and Q&A sheet. It links back to these documents.

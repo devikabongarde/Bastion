@@ -54,7 +54,7 @@ def _asset_query(principal: Principal, roles: set[str] = READ_ROLES):
     return statement
 
 
-LIVE_SSH_ADAPTERS = {"linux-ssh", "cisco-iosxe", "fortigate-ssh"}
+LIVE_SSH_ADAPTERS = {"linux-ssh", "windows-ssh", "cisco-iosxe", "fortigate-ssh"}
 # Mirrors ck_assets_category in the assets table.
 ASSET_CATEGORIES = frozenset({"windows", "linux", "firewall", "router", "switch"})
 

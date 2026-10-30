@@ -178,7 +178,7 @@ To demonstrate scanning network infrastructure (routers, switches, firewalls) wi
 2. The daemon runs on `127.0.0.1:2222` with credentials `audituser` / `auditpass`.
 3. It answers the exact read-only commands of **Ubuntu 22.04 LTS**, **Cisco IOS XE (Catalyst 9300, 17.12)** and **FortiGate 100F (FortiOS 7.4)**. All three use the same host key.
 
-To audit **real Ubuntu machines** on a lab network, follow [docs/runbooks/ubuntu-lab-onboarding.md](docs/runbooks/ubuntu-lab-onboarding.md).
+To audit **real Ubuntu machines** on a lab network, follow [docs/runbooks/ubuntu-lab-onboarding.md](docs/runbooks/ubuntu-lab-onboarding.md). For **another Windows PC**, follow [docs/runbooks/windows-lab-onboarding.md](docs/runbooks/windows-lab-onboarding.md).
 
 ### 4.2 Interactive Verification
 To show the evaluators that the mock target is a real, responsive SSH service:

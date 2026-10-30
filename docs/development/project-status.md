@@ -12,6 +12,7 @@ Status as of 2026-10-30, branch `demo-ready`. This file replaces the earlier pha
 | Sites with CIDR/port/DNS allow-lists | Working. The "New site" form is on the Assets page (platform_admin). | `inventory.py`, `Assets.tsx` |
 | Asset register, archive and CSV bulk import (preview + commit) | Working | `inventory.py` |
 | **Live Windows local audit** (`windows-local`) of the machine running the API | Working. Some secedit/auditpol controls are `UNKNOWN` unless the API runs elevated. | `windows/reader.py`, `tools/audit_local_machine.py` |
+| **Live remote Windows audit** (`windows-ssh`) over Windows OpenSSH Server | Working against a simulated Windows OpenSSH (commands executed via `cmd.exe /c`), with host-key pinning verified. Not yet run against a separate physical Windows PC. | `windows/ssh.py`, `tools/windows_lab_setup.ps1` |
 | **Live SSH collection pipeline**: host-key read, compare, pin, sealed credential, scoped connect, fixed readers, normalize, encrypted snapshot, evaluate | Working against the mock devices and real SSH servers | `live.py`, `collector/worker.py`, `adapters/*` |
 | Mock SSH lab devices (Ubuntu 22.04, Cisco Catalyst 9300 IOS XE 17.12, FortiGate 100F 7.4) on `127.0.0.1:2222` | Working (`BG_LAB_TARGETS=true`) | `tools/mock_targets.py`, `tools/sync_demo.py` |
 | Real Ubuntu onboarding: setup script, preflight, `sudo -n sshd -T` fallback | Added; see the [runbook](../runbooks/ubuntu-lab-onboarding.md) | `tools/ubuntu_lab_setup.sh`, `tools/check_ubuntu_target.py` |

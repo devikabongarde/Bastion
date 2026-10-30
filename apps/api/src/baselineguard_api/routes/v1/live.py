@@ -82,7 +82,7 @@ def _load_asset(db: Session, principal: Principal, asset_id: UUID) -> tuple[Asse
     if asset.adapter_id not in LIVE_SSH_ADAPTERS:
         raise AppError(
             422, "NOT_A_LIVE_SSH_ASSET", "Not supported",
-            "Only live SSH assets (linux-ssh, cisco-iosxe, fortigate-ssh) use host-key pinning.",
+            "Only live SSH assets (linux-ssh, windows-ssh, cisco-iosxe, fortigate-ssh) use host-key pinning.",
         )
     return asset, site
 

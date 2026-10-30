@@ -34,7 +34,7 @@ DbDep = Annotated[Session, Depends(get_org_db)]
 class JobClaimRequest(BaseModel):
     site_id: UUID
     collector_id: UUID = Field(default_factory=uuid4)
-    supported_adapters: list[str] = ["linux-ssh", "windows-local", "cisco-iosxe", "fortigate-ssh"]
+    supported_adapters: list[str] = ["linux-ssh", "windows-local", "windows-ssh", "cisco-iosxe", "fortigate-ssh"]
 
 
 class JobClaimResponse(BaseModel):

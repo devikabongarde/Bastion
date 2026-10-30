@@ -390,6 +390,7 @@ export default function Assets() {
                   <option value="linux-ssh">Linux · live SSH</option>
                   <option value="cisco-iosxe">Cisco IOS XE · live SSH</option>
                   <option value="fortigate-ssh">FortiGate · live SSH</option>
+                  <option value="windows-ssh">Windows · live SSH (OpenSSH Server)</option>
                   <option value="windows-local">Windows · this machine</option>
                 </select>
               </label>

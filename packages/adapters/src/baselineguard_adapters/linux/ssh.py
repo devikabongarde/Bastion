@@ -57,6 +57,8 @@ class ReadOutput:
 class UbuntuSSHReader:
     """Fixed read-only Ubuntu readers; no caller-supplied command text is accepted."""
 
+    readers: dict[str, str] = LINUX_READERS
+
     def __init__(
         self, *, known_hosts: Path, timeout_seconds: int = 10, max_bytes: int = MAX_READER_BYTES
     ):
@@ -74,11 +76,11 @@ class UbuntuSSHReader:
     ) -> tuple[ReadOutput, ...]:
         if (
             not reader_ids
-            or len(reader_ids) > len(LINUX_READERS)
+            or len(reader_ids) > len(self.readers)
             or len(set(reader_ids)) != len(reader_ids)
         ):
             raise CollectionError("INVALID_READER_SET")
-        if any(reader_id not in LINUX_READERS for reader_id in reader_ids):
+        if any(reader_id not in self.readers for reader_id in reader_ids):
             raise CollectionError("READER_NOT_ALLOWED")
         client = make_strict_ssh_client(self.known_hosts)
         try:
@@ -110,7 +112,7 @@ class UbuntuSSHReader:
 
     def _read(self, client: paramiko.SSHClient, reader_id: str) -> ReadOutput:
         _stdin, stdout, _stderr = client.exec_command(
-            LINUX_READERS[reader_id],
+            self.readers[reader_id],
             timeout=self.timeout_seconds,
             get_pty=False,
         )
@@ -141,7 +143,7 @@ class UbuntuSSHReader:
             # A failing read (missing file, unprivileged sshd -T, absent service) is kept with
             # its exit code; the normalizer reports the affected facts as unavailable instead
             # of one host-specific gap aborting the whole collection.
-            text_value = bytes(output).decode("utf-8", errors="strict")
+            text_value = self._decode(bytes(output))
             return ReadOutput(
                 reader_id=reader_id,
                 text=text_value,
@@ -153,3 +155,6 @@ class UbuntuSSHReader:
             raise CollectionError("OUTPUT_ENCODING_UNSUPPORTED") from None
         except TimeoutError:
             raise CollectionError("READER_TIMEOUT") from None
+
+    def _decode(self, raw: bytes) -> str:
+        return raw.decode("utf-8", errors="strict")

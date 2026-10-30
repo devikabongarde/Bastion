@@ -8,6 +8,7 @@ Adapters live in `packages/adapters/src/baselineguard_adapters/`. Every reader r
 | `cisco-iosxe` | `live_ssh` | SSH interactive shell | Cisco IOS XE router or switch (`declared_role` router/switch; anything else is treated as switch) | `org.baselineguard.cisco.iosxe` |
 | `fortigate-ssh` | `live_ssh` | SSH exec | FortiGate (FortiOS CLI) | `org.baselineguard.fortinet.fortigate` |
 | `windows-local` | `live_local` | Local `subprocess` on the **collector host** | The Windows machine running the API/collector (`windows` / `windows_server`) | `org.baselineguard.windows.server2019` |
+| `windows-ssh` | `live_ssh` | SSH exec to the built-in **Windows OpenSSH Server** (pinned host key, sealed credential) | A remote Windows 10/11 PC; the account must be a local Administrator | `org.baselineguard.windows.server2019` |
 | `linux-ssh-fixture`, `cisco-iosxe-fixture`, `fortigate-fixture`, `windows-fixture` | `fixture` | Reads raw-output fixture files (needs a `fixture_root`, which the embedded worker does not configure) | Demo / sample assets | as above |
 | any other id | `import` | None; evidence comes via `POST /api/v1/imports` | Offline evidence | as above |
 
@@ -59,7 +60,11 @@ From `windows/reader.py`. The reader runs on the collector host with `shell=True
 | `windows.firewall.profiles` | `Get-NetFirewallProfile` → JSON |
 | `windows.services.state` | `Get-Service` Telnet, RemoteRegistry, SSDPSRV, upnphost, XboxGipSvc → JSON |
 
-`secedit` and `auditpol` reveal password/lockout and audit-policy settings only to an elevated process. Without elevation those controls show `UNKNOWN`. The class docstring mentions WinRM, but no remote Windows transport is implemented. A `windows-local` asset always audits the machine the collector runs on, whatever address is stored on the asset. The same commands are available as a terminal tool: `tools/audit_local_machine.py`.
+`secedit` and `auditpol` reveal password/lockout and audit-policy settings only to an elevated process. Without elevation those controls show `UNKNOWN`. Remote Windows PCs are audited with `windows-ssh` (below), not WinRM. A `windows-local` asset always audits the machine the collector runs on, whatever address is stored on the asset. The same commands are available as a terminal tool: `tools/audit_local_machine.py`.
+
+## Remote Windows (`windows-ssh`)
+
+From `windows/ssh.py`. `WindowsSSHReader` subclasses the SSH reader and runs the **same `WINDOWS_READERS` commands** as `windows-local`, over SSH to Windows OpenSSH Server (whose default shell is `cmd.exe`). Onboarding, scope checks, host-key pinning, retries and normalization are identical to `linux-ssh`. Each reader gets a 30 s timeout (PowerShell start-up). Output is decoded as UTF-8, falling back to the OEM code page (cp437). The account must be a local Administrator for `secedit`/`auditpol`. `HKCU` checks reflect the audit account's own profile. Setup: `tools/windows_lab_setup.ps1`; runbook: [windows-lab-onboarding.md](../runbooks/windows-lab-onboarding.md).
 
 ## Site scope allow-lists
 

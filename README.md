@@ -8,7 +8,7 @@ Bastion (internal package name `baselineguard`) is a self-hosted, **deterministi
 
 - **Live collection**
   - Ubuntu over SSH (`linux-ssh`), Cisco IOS XE routers and switches (`cisco-iosxe`) and FortiGate (`fortigate-ssh`) via fixed command tables.
-  - Local Windows audit of the Bastion host (`windows-local`).
+  - Windows: the Bastion host locally (`windows-local`), or remote Windows 10/11 PCs over the built-in OpenSSH Server (`windows-ssh`).
   - Offline evidence import.
 - **Safe-by-default connections**
   - Per-site CIDR, port and DNS allow-lists with pinned-IP connections.
@@ -49,7 +49,7 @@ corepack pnpm --filter @baselineguard/web dev          # console :5173
 .\.venv\Scripts\python.exe tools/totp.py               # current MFA codes
 ```
 
-Open http://127.0.0.1:5173 and click **Open console** to reach `/login`. The demo password is stored in `data/demo-credentials.json`. With `BG_DEMO_LOGIN=true`, one-click demo sign-in is available. The full guide is in [docs/development/local-setup.md](docs/development/local-setup.md). To onboard real Ubuntu machines, see [docs/runbooks/ubuntu-lab-onboarding.md](docs/runbooks/ubuntu-lab-onboarding.md).
+Open http://127.0.0.1:5173 and click **Open console** to reach `/login`. The demo password is stored in `data/demo-credentials.json`. With `BG_DEMO_LOGIN=true`, one-click demo sign-in is available. The full guide is in [docs/development/local-setup.md](docs/development/local-setup.md). To onboard real Ubuntu machines, see [docs/runbooks/ubuntu-lab-onboarding.md](docs/runbooks/ubuntu-lab-onboarding.md); for remote Windows PCs, [docs/runbooks/windows-lab-onboarding.md](docs/runbooks/windows-lab-onboarding.md).
 
 ## Architecture
 

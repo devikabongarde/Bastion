@@ -22,7 +22,7 @@ from baselineguard_adapters.base.transport import (
     SSHCredential,
     resolve_authorized_endpoint,
 )
-from baselineguard_adapters.linux.ssh import LINUX_READERS, UbuntuSSHReader
+from baselineguard_adapters.linux.ssh import UbuntuSSHReader
 from baselineguard_credentials.envelope import unseal_credential
 from baselineguard_evidence.bundle import ArtifactStore
 from baselineguard_persistence.database import get_engine
@@ -47,8 +47,8 @@ from baselineguard_collector.snapshot_store import (  # noqa: E402
     read_outputs_from_fixture,
 )
 
-LIVE_ADAPTERS = ("linux-ssh", "windows-local", "fortigate-ssh", "cisco-iosxe")
-SSH_ADAPTERS = frozenset({"linux-ssh", "fortigate-ssh", "cisco-iosxe"})
+LIVE_ADAPTERS = ("linux-ssh", "windows-local", "windows-ssh", "fortigate-ssh", "cisco-iosxe")
+SSH_ADAPTERS = frozenset({"linux-ssh", "windows-ssh", "fortigate-ssh", "cisco-iosxe"})
 FIXTURE_ADAPTERS = (
     "linux-ssh-fixture",
     "cisco-iosxe-fixture",
@@ -279,6 +279,12 @@ class CollectorWorker:
             )
         if adapter_id == "linux-ssh":
             return self._collect_linux_live(db, job, asset, identity, now)
+        if adapter_id == "windows-ssh":
+            from baselineguard_adapters.windows.ssh import WindowsSSHReader
+
+            return self._collect_linux_live(
+                db, job, asset, identity, now, reader_class=WindowsSSHReader
+            )
         if adapter_id == "windows-local":
             return self._collect_windows_live(db, job, asset, identity, now)
         if adapter_id == "fortigate-ssh":
@@ -385,8 +391,15 @@ class CollectorWorker:
         )
 
     def _collect_linux_live(
-        self, db: Session, job: Job, asset: Asset, identity: dict[str, Any], now: datetime
+        self,
+        db: Session,
+        job: Job,
+        asset: Asset,
+        identity: dict[str, Any],
+        now: datetime,
+        reader_class: type[UbuntuSSHReader] = UbuntuSSHReader,
     ) -> CollectionOutcome:
+        """Collect over SSH with a fixed command table (Ubuntu, or Windows OpenSSH)."""
         from baselineguard_adapters.linux.ssh import CollectionError
 
         site = db.get(Site, asset.site_id)
@@ -403,12 +416,14 @@ class CollectorWorker:
         except ValueError as error:
             raise CollectionFailure(str(error), retryable=False) from None
         credential = self._ssh_credential(db, asset)
-        reader = UbuntuSSHReader(
+        reader = reader_class(
             known_hosts=Path(self.known_hosts_file or "/etc/baselineguard/known_hosts"),
-            timeout_seconds=self.reader_timeout_seconds,
+            timeout_seconds=max(self.reader_timeout_seconds, 30)
+            if reader_class is not UbuntuSSHReader
+            else self.reader_timeout_seconds,
         )
         try:
-            outputs = reader.collect(endpoint, credential, tuple(sorted(LINUX_READERS)))
+            outputs = reader.collect(endpoint, credential, tuple(sorted(reader_class.readers)))
         except CollectionError as error:
             if error.code in {"SSH_AUTHENTICATION_FAILED", "SSH_HOST_KEY_MISMATCH"}:
                 raise CollectionFailure(error.code, retryable=False) from None
