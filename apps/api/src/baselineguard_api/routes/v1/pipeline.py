@@ -11,6 +11,7 @@ import json
 import os
 import secrets
 from datetime import UTC, datetime, timedelta
+from functools import lru_cache
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Annotated, Any, Literal
@@ -90,12 +91,20 @@ def _visible_sites(principal: Principal) -> frozenset[UUID] | None:
     return principal.sites_for(ANY_ROLE)
 
 
+REMEDIATION_DIR = REMEDIATION_PATH.parent
+
+
+@lru_cache(maxsize=1)
 def _remediation_catalog() -> dict[str, Any]:
-    try:
-        data = json.loads(REMEDIATION_PATH.read_text(encoding="utf-8"))
-        return dict(data.get("templates", {}))
-    except (OSError, ValueError):
-        return {}
+    """Merge every platform's remediation catalog (Linux, Windows, Cisco, FortiGate)."""
+    catalog: dict[str, Any] = {}
+    for path in sorted(REMEDIATION_DIR.glob("*.json")):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        catalog.update(data.get("templates", {}))
+    return catalog
 
 
 def _store() -> ArtifactStore:
@@ -537,7 +546,9 @@ FAMILY_SAMPLE_CONFIG: dict[str, tuple[Path, str, dict[str, str]]] = {
 }
 
 
-def _sample_facts(profile: str, variant: int = 0, family: str = "ubuntu") -> dict[str, Any]:
+def _sample_facts(
+    profile: str, variant: int = 0, family: str = "ubuntu", role: str | None = None
+) -> dict[str, Any]:
     from baselineguard_rule_engine.packs import load_rule_pack
 
     pack_path, _, _ = FAMILY_SAMPLE_CONFIG.get(family, FAMILY_SAMPLE_CONFIG["ubuntu"])
@@ -557,6 +568,9 @@ def _sample_facts(profile: str, variant: int = 0, family: str = "ubuntu") -> dic
                 "value": value.get("value"),
                 "unit": value.get("unit"),
             }
+    if role and "platform.role" in facts:
+        # Role-scoped controls (e.g. switch-only) must see the asset's real role.
+        facts["platform.role"] = {"state": "PRESENT", "value": role, "unit": None}
     return facts
 
 
@@ -566,6 +580,7 @@ def sample_bundle(
     profile: Annotated[Literal["hardened", "mixed", "weak"], Query()] = "mixed",
     variant: Annotated[int, Query(ge=0, le=2)] = 0,
     family: Annotated[str, Query()] = "ubuntu",
+    role: Annotated[str | None, Query(pattern=r"^(router|switch)$")] = None,
 ) -> dict[str, Any]:
     _need(principal, ANY_ROLE)
     now = datetime.now(UTC)
@@ -577,7 +592,7 @@ def sample_bundle(
         "observed_end": now.isoformat(),
         "capture_attested": True,
         "attested_by": "sample-generator",
-        "facts": _sample_facts(profile, variant, family=family),
+        "facts": _sample_facts(profile, variant, family=family, role=role),
     }
 
 

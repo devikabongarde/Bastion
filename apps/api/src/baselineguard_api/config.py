@@ -28,6 +28,14 @@ class Settings(BaseSettings):
     # that is allowed to do so (never the restricted API role in production).
     embedded_workers: bool = False
     worker_database_url: str | None = None
+    # Demo convenience: allow password-only sign-in (MFA skipped) for live presentations.
+    # Never permitted in production; every use is written to the audit log.
+    demo_login: bool = False
+    # Live SSH collection: pinned host keys are written here and enforced by the collector.
+    known_hosts_file: str = "./data/known_hosts"
+    # Lab convenience: allow loopback targets such as the bundled mock device on
+    # 127.0.0.1:2222. Loopback is otherwise refused (SSRF guard). Never in production.
+    lab_targets: bool = False
 
     @field_validator("environment")
     @classmethod
@@ -58,6 +66,10 @@ class Settings(BaseSettings):
                 raise ValueError(
                     "Cross-origin browser access is disabled; use the same-origin reverse proxy"
                 )
+            if self.demo_login:
+                raise ValueError("Demo sign-in (BG_DEMO_LOGIN) must be disabled in production")
+            if self.lab_targets:
+                raise ValueError("Lab loopback targets (BG_LAB_TARGETS) must be disabled in production")
         return self
 
 

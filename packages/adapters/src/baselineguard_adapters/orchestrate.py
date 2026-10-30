@@ -13,12 +13,18 @@ from baselineguard_contracts.common import FactState, NormalizedFact
 from baselineguard_adapters.linux.ssh import LINUX_READERS, ReadOutput
 from baselineguard_adapters.normalize import (
     ParseLimitExceeded,  # noqa: F401  (re-exported for callers)
-    fact,  # noqa: F401  (re-exported for callers)
+    fact,
+    parse_cisco_interfaces_status,
     parse_cisco_port_security,
     parse_cisco_spanning_tree,
     parse_cisco_switchport,
     parse_file_modes,
     parse_fortios_firewall_policy,
+    parse_fortios_interfaces,
+    parse_fortios_ntp,
+    parse_fortios_password_policy,
+    parse_fortios_snmp_community,
+    parse_fortios_snmp_user,
     parse_fortios_status,
     parse_fortios_syslog,
     parse_fortios_system_global,
@@ -138,6 +144,15 @@ def normalize_outputs(results: list[tuple[str, ReadOutput]]) -> list[NormalizedF
     if port_security is not None:
         _add(facts, parse_cisco_port_security(port_security.text), port_security)
 
+    interfaces_status = outputs.get("iosxe.switch.interfaces_status")
+    if interfaces_status is not None:
+        _add(facts, parse_cisco_interfaces_status(interfaces_status.text), interfaces_status)
+
+    if show_version is not None:
+        # The reader set reveals the device role: switch readers run only on switches.
+        role = "switch" if switchport is not None else "router"
+        _add(facts, [fact("platform.role", role, FactState.PRESENT)], show_version)
+
     # Windows (Server 2019 / Windows 11)
     win_os = outputs.get("windows.identity.os_version")
     if win_os is not None:
@@ -179,5 +194,16 @@ def normalize_outputs(results: list[tuple[str, ReadOutput]]) -> list[NormalizedF
     fg_syslog = outputs.get("fortigate.log.syslog")
     if fg_syslog is not None:
         _add(facts, parse_fortios_syslog(fg_syslog.text), fg_syslog)
+
+    for reader_id, parser in (
+        ("fortigate.system.interface", parse_fortios_interfaces),
+        ("fortigate.system.ntp", parse_fortios_ntp),
+        ("fortigate.snmp.community", parse_fortios_snmp_community),
+        ("fortigate.snmp.user", parse_fortios_snmp_user),
+        ("fortigate.system.password_policy", parse_fortios_password_policy),
+    ):
+        output = outputs.get(reader_id)
+        if output is not None:
+            _add(facts, parser(output.text), output)
 
     return list(facts.values())

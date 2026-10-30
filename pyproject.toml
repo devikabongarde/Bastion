@@ -55,5 +55,5 @@ ignore = ["B008", "S101", "E501", "S602", "S603", "S607", "ASYNC230", "ASYNC251"
 "tests/**/*.py" = ["S101", "S105", "S106"]
 "packages/contracts/src/baselineguard_contracts/common.py" = ["S105"]
 
-"tools/*.py" = ["E501", "S105", "S106", "S603", "S404", "E402"]
+"tools/*.py" = ["E501", "S105", "S106", "S603", "S404", "E402", "S110", "S507"]
 "apps/api/src/baselineguard_api/routes/v1/pipeline.py" = ["E501", "E741"]

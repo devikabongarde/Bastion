@@ -1,2 +1,8 @@
-@import url("./theme.css");
-
+@import "tailwindcss";
+/* `dark:` follows the in-app theme toggle, not the OS setting */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@import "./theme.css";
+@import "./docs.css";
+@import "./landing.css";
+@import "./signin.css";
+@import "./dashboard.css";

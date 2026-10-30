@@ -17,7 +17,7 @@ def _escape(text: str) -> str:
 
 def _lines(report: ReportDocument) -> list[str]:
     out = [
-        "BaselineGuard assessment report",
+        "Bastion assessment report",
         "",
         f"Organization: {report.organization_name}",
         f"Policy: {report.policy_name} (revision {report.policy_revision})",

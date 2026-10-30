@@ -12,9 +12,9 @@ CONTENT = Path(__file__).resolve().parents[2] / "content" / "original"
 @pytest.mark.parametrize(
     "filename,expected_count,family",
     [
-        ("windows-server-2019.yaml", 40, "windows_server"),
-        ("cisco-iosxe-hardening.yaml", 30, "cisco_ios_xe"),
-        ("fortigate-fortios.yaml", 30, "fortigate"),
+        ("windows-server-2019.yaml", 32, "windows_server"),
+        ("cisco-iosxe-hardening.yaml", 31, "cisco_ios_xe"),
+        ("fortigate-fortios.yaml", 20, "fortigate"),
     ],
 )
 def test_extended_rule_packs_load_and_validate(filename: str, expected_count: int, family: str) -> None:

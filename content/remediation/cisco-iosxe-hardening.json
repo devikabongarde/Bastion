@@ -1,366 +1,413 @@
 {
   "schema_version": "1.0",
-  "note": "Original project-authored remediation guidance.",
+  "note": "Original project-authored remediation guidance. Review before use; BaselineGuard never executes these commands.",
   "templates": {
     "manual.cisco.01": {
-      "summary": "Configure `ip ssh version 2`.",
+      "summary": "Restrict VTY transport to SSH.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure SSH version 2 is explicitly enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "line vty 0 15",
+        " transport input ssh",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | section line vty",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.02": {
-      "summary": "Execute `no ip http server`.",
+      "summary": "Enforce SSH version 2.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure HTTP server is disabled.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip ssh version 2",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects False.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ip ssh",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.03": {
-      "summary": "Execute `ip http secure-server`.",
+      "summary": "Set the SSH timeout to 60 seconds.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure secure HTTPS server is enabled if web management is required.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip ssh time-out 60",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ip ssh",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.04": {
-      "summary": "Execute `service password-encryption`.",
+      "summary": "Allow at most 3 SSH authentication attempts.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure 'service password-encryption' is enabled.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip ssh authentication-retries 3",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ip ssh",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.05": {
-      "summary": "Execute `no ip source-route`.",
+      "summary": "Set a 10-minute idle timeout on all VTY lines.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure IP source routing is disabled.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "line vty 0 15",
+        " exec-timeout 10 0",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | section line vty",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.06": {
-      "summary": "Execute `no cdp run`.",
+      "summary": "Replace unlimited timeouts with 10 minutes.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure CDP is disabled globally or on unapproved interfaces.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "line vty 0 15",
+        " exec-timeout 10 0",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include exec-timeout",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.07": {
-      "summary": "Configure `banner motd ^...^`.",
+      "summary": "Apply a management ACL to all VTY lines.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure MOTD login banner is configured.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip access-list standard MGMT-ONLY",
+        " permit 10.20.100.0 0.0.0.255",
+        " deny any log",
+        "line vty 0 15",
+        " access-class MGMT-ONLY in",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | section line vty",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.08": {
-      "summary": "Configure `exec-timeout 10 0` on all line vty 0 15.",
+      "summary": "Disable the HTTP server.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure no VTY line has unlimited exec-timeout configured.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "no ip http server",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects False.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include ip http",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.09": {
-      "summary": "Execute `spanning-tree portfast bpduguard default`.",
+      "summary": "Enable the HTTPS server.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Spanning Tree BPDU Guard is enabled by default on access ports.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip http secure-server",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include ip http secure",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.10": {
-      "summary": "Configure `switchport port-security` on access ports.",
+      "summary": "Enable AAA.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Port Security is enabled on managed switch interfaces.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "aaa new-model",
+        "aaa authentication login default local",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include aaa",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.11": {
-      "summary": "Assign access ports to dedicated functional VLANs.",
+      "summary": "Set an enable secret.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure default VLAN 1 is not used for active access switchports.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "enable algorithm-type scrypt secret <STRONG-SECRET>",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects 0.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include enable secret",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.12": {
-      "summary": "Execute Cisco IOS XE hardening procedure #12.",
+      "summary": "Enable password encryption.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #12 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "service password-encryption",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include password-encryption",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.13": {
-      "summary": "Execute Cisco IOS XE hardening procedure #13.",
+      "summary": "Configure a MOTD banner.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #13 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "banner motd ^C Authorized access only. Activity is monitored. ^C",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show banner motd",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.14": {
-      "summary": "Execute Cisco IOS XE hardening procedure #14.",
+      "summary": "Remove all SNMP communities.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #14 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "no snmp-server community <COMMUNITY>",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include snmp-server community",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.15": {
-      "summary": "Execute Cisco IOS XE hardening procedure #15.",
+      "summary": "Configure an SNMPv3 authPriv group and user.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #15 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "snmp-server group MONITOR v3 priv",
+        "snmp-server user monitor MONITOR v3 auth sha <AUTH-KEY> priv aes 256 <PRIV-KEY>",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show snmp group",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.16": {
-      "summary": "Execute Cisco IOS XE hardening procedure #16.",
+      "summary": "Forward logs to the central syslog server.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #16 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "logging host 10.20.100.5",
+        "logging trap informational",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show logging | include Logging to",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.17": {
-      "summary": "Execute Cisco IOS XE hardening procedure #17.",
+      "summary": "Enable datetime log timestamps.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #17 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "service timestamps log datetime msec localtime show-timezone",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include service timestamps",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.18": {
-      "summary": "Execute Cisco IOS XE hardening procedure #18.",
+      "summary": "Configure an NTP server.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #18 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ntp server 10.20.100.1 prefer",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ntp associations",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.19": {
-      "summary": "Execute Cisco IOS XE hardening procedure #19.",
+      "summary": "Authenticate NTP sources.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #19 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ntp authentication-key 1 hmac-sha2-256 <NTP-KEY>",
+        "ntp trusted-key 1",
+        "ntp authenticate",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ntp status",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.20": {
-      "summary": "Execute Cisco IOS XE hardening procedure #20.",
+      "summary": "Replace catch-all permits with explicit rules and a final deny.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #20 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip access-list extended <ACL-NAME>",
+        " no permit ip any any",
+        " deny ip any any log",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show access-lists",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.21": {
-      "summary": "Execute Cisco IOS XE hardening procedure #21.",
+      "summary": "Restrict sensitive ports to the management subnet.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #21 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip access-list extended <ACL-NAME>",
+        " no permit tcp any any eq 22",
+        " permit tcp 10.20.100.0 0.0.0.255 any eq 22",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show access-lists | include eq (22|23|445|3389)",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.22": {
-      "summary": "Execute Cisco IOS XE hardening procedure #22.",
+      "summary": "Remove or reorder unreachable ACL entries.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #22 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip access-list extended <ACL-NAME>",
+        " no <SEQUENCE-OF-SHADOWED-ENTRY>",
+        "ip access-list resequence <ACL-NAME> 10 10",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show access-lists <ACL-NAME>",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.23": {
-      "summary": "Execute Cisco IOS XE hardening procedure #23.",
+      "summary": "Disable IP source routing.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #23 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "no ip source-route",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show running-config | include source-route",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.24": {
-      "summary": "Execute Cisco IOS XE hardening procedure #24.",
+      "summary": "Disable CDP.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #24 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "no cdp run",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show cdp",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.25": {
-      "summary": "Execute Cisco IOS XE hardening procedure #25.",
+      "summary": "Shut down and park unused ports.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #25 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "interface range <UNUSED-PORTS>",
+        " switchport access vlan 999",
+        " shutdown",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show interfaces status | include notconnect",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.26": {
-      "summary": "Execute Cisco IOS XE hardening procedure #26.",
+      "summary": "Enable port security on access ports.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #26 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "interface range <ACCESS-PORTS>",
+        " switchport mode access",
+        " switchport port-security",
+        " switchport port-security maximum 2",
+        " switchport port-security violation restrict",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show port-security",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.27": {
-      "summary": "Execute Cisco IOS XE hardening procedure #27.",
+      "summary": "Enable DHCP snooping on user VLANs.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #27 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip dhcp snooping",
+        "ip dhcp snooping vlan 10,20",
+        "interface <UPLINK>",
+        " ip dhcp snooping trust",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ip dhcp snooping",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.28": {
-      "summary": "Execute Cisco IOS XE hardening procedure #28.",
+      "summary": "Enable DAI on user VLANs.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #28 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "ip arp inspection vlan 10,20",
+        "interface <UPLINK>",
+        " ip arp inspection trust",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ip arp inspection",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.29": {
-      "summary": "Execute Cisco IOS XE hardening procedure #29.",
+      "summary": "Enable BPDU Guard by default.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #29 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "spanning-tree portfast bpduguard default",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show spanning-tree summary",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     },
     "manual.cisco.30": {
-      "summary": "Execute Cisco IOS XE hardening procedure #30.",
+      "summary": "Move management to a dedicated VLAN and shut VLAN 1.",
       "steps": [
-        "Connect to appliance management console over secure SSH.",
-        "Enter configuration mode: `configure terminal`.",
-        "Apply configuration commands for: Ensure Cisco IOS XE infrastructure hardening baseline control #30 is enforced.",
-        "Exit and save configuration: `copy running-config startup-config`."
+        "configure terminal",
+        "interface Vlan99",
+        " ip address 10.20.99.2 255.255.255.0",
+        " no shutdown",
+        "interface Vlan1",
+        " no ip address",
+        " shutdown",
+        "end",
+        "write memory"
       ],
-      "verify": "Verify running configuration reflects True.",
-      "impact": "Administrative access may momentarily reconnect if transport parameters change.",
-      "authority": "Local running-config, or central network management controller."
+      "verify": "show ip interface brief | include Vlan",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
+    },
+    "manual.cisco.31": {
+      "summary": "Assign access ports to functional VLANs.",
+      "steps": [
+        "configure terminal",
+        "interface range <PORTS-IN-VLAN1>",
+        " switchport access vlan 10",
+        "end",
+        "write memory"
+      ],
+      "verify": "show vlan brief",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Device running-config, or the network controller (e.g. DNA Center) if it owns the template."
     }
   }
 }

@@ -136,7 +136,7 @@ export function ErrorNotice({ error }: { error: unknown }) {
 export function PageHeading({ title, description, actions }: { title: string; description: string; actions?: ReactNode }) {
   return (
     <div className="page-heading">
-      <div><p className="eyebrow">BaselineGuard</p><h1>{title}</h1><p className="page-description">{description}</p></div>
+      <div><p className="eyebrow">Workspace</p><h1>{title}</h1><p className="page-description">{description}</p></div>
       {actions && <div className="top-actions">{actions}</div>}
     </div>
   );

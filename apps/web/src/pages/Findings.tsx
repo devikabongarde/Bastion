@@ -1,225 +1,341 @@
-import { useState, type FormEvent } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
-import { ApiError, apiGet, apiWrite, type FindingDetail, type FindingItem, type FindingState, type Severity } from "../lib/api";
-import { hasRole, usePrincipal } from "../lib/hooks";
-import { ago, label, observed, shortKey, show, when } from "../lib/format";
-import { Chip, CodeBlock, Drawer, Empty, ErrorNotice, PageHeading, SeverityChip, Skeleton, StateChip, useToast } from "../components/ui";
+import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiGet, apiWrite, type FindingDetail, type FindingItem } from '../lib/api';
+import { ago, when } from '../lib/format';
+import { hasRole, usePrincipal } from '../lib/hooks';
+import { Card } from '../components/shadcn/card';
+import { Button } from '../components/shadcn/button';
+import { Input } from '../components/shadcn/input';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '../components/shadcn/table';
+import { Sheet, SheetHeader, SheetTitle, SheetDescription, SheetContent, SheetFooter } from '../components/shadcn/sheet';
+import { Check, Copy, FileCheck2, History, Search, ShieldAlert, Terminal } from 'lucide-react';
 
-const STATES: Array<[string, FindingState | ""]> = [["All", ""], ["Open", "OPEN"], ["Risk accepted", "RISK_ACCEPTED"], ["Resolved", "RESOLVED"]];
-const SEVERITIES: Array<Severity | ""> = ["", "critical", "high", "medium", "low"];
+const OPERATORS: Record<string, string> = { eq: '=', ne: '≠', lt: '<', lte: '≤', gt: '>', gte: '≥', in: 'one of', contains: 'contains' };
+
+function show(value: unknown): string {
+  if (value === null || value === undefined) return 'not observed';
+  if (typeof value === 'string') return value;
+  return JSON.stringify(value);
+}
+
+/** `management.vty.telnet_permitted` -> `Telnet permitted (management.vty)` */
+function factLabel(key: string): string {
+  const parts = key.split('.');
+  const leaf = parts.pop() ?? key;
+  return leaf.replaceAll('_', ' ').replace(/^\w/, (c) => c.toUpperCase());
+}
+
+function SeverityChip({ severity }: { severity: string }) {
+  return <span className={`chip ${severity.toLowerCase()}`}>{severity.toUpperCase()}</span>;
+}
+
+function useCopy() {
+  const [copied, setCopied] = useState<string | null>(null);
+  return {
+    copied,
+    copy: (text: string, key: string) => {
+      void navigator.clipboard.writeText(text);
+      setCopied(key);
+      window.setTimeout(() => setCopied(null), 2000);
+    },
+  };
+}
 
 export default function Findings() {
   const [params, setParams] = useSearchParams();
-  const state = params.get("state") ?? "OPEN";
-  const severity = params.get("severity") ?? "";
-  const asset = params.get("asset") ?? "";
-  const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
+  const stateFilter = params.get('state') ?? 'OPEN';
+  const severityFilter = params.get('severity') ?? '';
+  const assetFilter = params.get('asset') ?? '';
+  const [query, setQuery] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const search = new URLSearchParams({ limit: "200" });
-  if (state) search.set("state", state);
-  if (severity) search.set("severity", severity);
-  if (asset) search.set("asset_id", asset);
-  if (query) search.set("q", query);
-  const findings = useQuery({ queryKey: ["findings", state, severity, asset, query], queryFn: ({ signal }) => apiGet<{ items: FindingItem[]; total: number }>(`/api/v1/findings?${search}`, signal) });
+  const search = new URLSearchParams({ limit: '200' });
+  if (stateFilter) search.set('state', stateFilter);
+  if (severityFilter) search.set('severity', severityFilter);
+  if (assetFilter) search.set('asset_id', assetFilter);
+  if (query) search.set('q', query);
 
-  function setFilter(key: string, value: string) {
+  const findings = useQuery({
+    queryKey: ['findings', stateFilter, severityFilter, assetFilter, query],
+    queryFn: ({ signal }) => apiGet<{ items: FindingItem[]; total: number }>(`/api/v1/findings?${search}`, signal),
+    refetchInterval: 15_000,
+  });
+  const items = findings.data?.items ?? [];
+  const assetName = assetFilter ? items[0]?.asset_name ?? 'selected asset' : '';
+
+  function setParam(key: string, value: string) {
     const next = new URLSearchParams(params);
-    if (value) next.set(key, value); else next.delete(key);
-    if (key === "state" && !value) next.set("state", "");
-    setParams(next, { replace: true });
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setParams(next);
   }
 
   return (
-    <>
-      <PageHeading title="Findings" description="Confirmed deviations, ordered by status and severity. Only a newer passing assessment resolves a finding — marking it done does not." />
-      <section className="panel">
-        <div className="filters">
-          <div className="pill-group" role="group" aria-label="State">
-            {STATES.map(([text, value]) => <button key={text} className="pill" aria-pressed={state === value} onClick={() => setFilter("state", value)}>{text}</button>)}
-          </div>
-          <div className="pill-group" role="group" aria-label="Severity">
-            {SEVERITIES.map((value) => <button key={value || "any"} className="pill" aria-pressed={severity === value} onClick={() => setFilter("severity", value)}>{value ? label(value) : "Any severity"}</button>)}
-          </div>
-          <input type="search" placeholder="Search title, control or asset" aria-label="Search findings" value={query} onChange={(e) => setQuery(e.target.value)} />
-          {asset && <button className="btn sm" onClick={() => setFilter("asset", "")}>Clear asset filter ×</button>}
-          <span className="quiet" style={{ marginLeft: "auto" }}>{findings.data ? `${findings.data.items.length} of ${findings.data.total}` : ""}</span>
+    <div className="space-y-6 animate-in fade-in duration-200">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">Workspace</p>
+          <h1>Findings</h1>
+          <p className="page-description">
+            Every failed control with the expected value, the observed device configuration and exact remediation commands.
+          </p>
         </div>
-        {findings.isPending && <Skeleton rows={6} />}
-        {findings.isError && <ErrorNotice error={findings.error} />}
-        {findings.isSuccess && findings.data.items.length === 0 && <Empty icon="check" title="No findings match these filters">Adjust the filters, or run a new assessment. Hidden-by-filter results are not deleted.</Empty>}
-        {findings.isSuccess && findings.data.items.length > 0 && (
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th scope="col">Severity</th><th scope="col">Finding</th><th scope="col">Asset</th><th scope="col">State</th><th scope="col">Owner</th><th scope="col">Due</th><th scope="col">Last seen</th></tr></thead>
-              <tbody>
-                {findings.data.items.map((f) => (
-                  <tr key={f.id} className="clickable" tabIndex={0} onClick={() => setSelected(f.id)} onKeyDown={(e) => e.key === "Enter" && setSelected(f.id)}>
-                    <td><SeverityChip severity={f.severity} /></td>
-                    <th scope="row">{f.title}<span className="cell-sub">{shortKey(f.control_key)}</span></th>
-                    <td>{f.asset_name}</td>
-                    <td><StateChip state={f.state} /></td>
-                    <td>{f.owner_email ? f.owner_email.split("@")[0] : <span className="quiet">Unassigned</span>}</td>
-                    <td>{f.due_at ? when(f.due_at).split(",")[0] : <span className="quiet">—</span>}</td>
-                    <td className="quiet">{ago(f.last_seen_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <span className="text-xs font-mono text-[var(--body-muted)]">{findings.data?.total ?? items.length} findings</span>
+      </div>
+
+      <Card className="p-4">
+        <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--body-muted)]" />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by control, title or asset…" className="!pl-10 h-10 w-full" />
           </div>
-        )}
-      </section>
-      {selected && <FindingDrawer id={selected} onClose={() => setSelected(null)} />}
-    </>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-full p-1 border border-[var(--line)]">
+              {['OPEN', 'RISK_ACCEPTED', 'RESOLVED'].map((state) => (
+                <button key={state} type="button" onClick={() => setParam('state', state)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${stateFilter === state ? 'bg-[var(--mint-tint)] text-[var(--heading)]' : 'text-[var(--body-muted)] hover:text-[var(--heading)]'}`}>
+                  {state === 'RISK_ACCEPTED' ? 'Accepted' : state.charAt(0) + state.slice(1).toLowerCase()}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center rounded-full p-1 border border-[var(--line)]">
+              {['', 'critical', 'high', 'medium', 'low'].map((sev) => (
+                <button key={sev || 'all'} type="button" onClick={() => setParam('severity', sev)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${severityFilter === sev ? 'bg-[var(--mint-tint)] text-[var(--heading)]' : 'text-[var(--body-muted)] hover:text-[var(--heading)]'}`}>
+                  {sev ? sev.charAt(0).toUpperCase() + sev.slice(1) : 'All'}
+                </button>
+              ))}
+            </div>
+            {assetFilter && (
+              <Button variant="outline" size="sm" onClick={() => setParam('asset', '')} className="text-xs">
+                {assetName} ×
+              </Button>
+            )}
+          </div>
+        </div>
+      </Card>
+
+      <Card className="overflow-x-auto p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Severity</TableHead>
+              <TableHead>Control</TableHead>
+              <TableHead className="w-[170px]">Asset</TableHead>
+              <TableHead className="w-[130px]">First seen</TableHead>
+              <TableHead className="w-[150px]">Owner / due</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {findings.isPending ? (
+              <TableRow><TableCell colSpan={5} className="h-24 text-center text-[var(--body-muted)]">Loading findings…</TableCell></TableRow>
+            ) : items.length === 0 ? (
+              <TableRow><TableCell colSpan={5} className="h-32 text-center text-[var(--body-muted)]">No findings match these filters.</TableCell></TableRow>
+            ) : (
+              items.map((f) => (
+                <TableRow key={f.id} onClick={() => setSelectedId(f.id)} className="cursor-pointer">
+                  <TableCell><SeverityChip severity={f.severity} /></TableCell>
+                  <TableCell>
+                    <div className="font-medium text-sm text-[var(--heading)]">{f.title}</div>
+                    <div className="text-xs text-[var(--body-muted)] font-mono mt-0.5">{f.control_key}</div>
+                  </TableCell>
+                  <TableCell><span className="font-mono text-xs text-[var(--heading)]">{f.asset_name}</span></TableCell>
+                  <TableCell className="text-xs text-[var(--body-muted)]">{ago(f.first_seen_at)}</TableCell>
+                  <TableCell className="text-xs text-[var(--body-muted)]">
+                    {f.owner_email ?? 'Unassigned'}
+                    {f.due_at && <div>due {when(f.due_at)}</div>}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <Sheet open={Boolean(selectedId)} onOpenChange={(open) => !open && setSelectedId(null)} side="right" className="sm:max-w-3xl">
+        {selectedId && <FindingDrawer id={selectedId} onClose={() => setSelectedId(null)} />}
+      </Sheet>
+    </div>
   );
 }
 
 function FindingDrawer({ id, onClose }: { id: string; onClose: () => void }) {
-  const detail = useQuery({ queryKey: ["finding", id], queryFn: ({ signal }) => apiGet<FindingDetail>(`/api/v1/findings/${id}`, signal) });
-  const principal = usePrincipal();
-  const users = useQuery({ queryKey: ["users"], queryFn: ({ signal }) => apiGet<{ items: Array<{ id: string; email: string }> }>("/api/v1/users", signal) });
-  const cache = useQueryClient();
-  const toast = useToast();
-  const [showException, setShowException] = useState(false);
-  const canReview = hasRole(principal.data?.roles, "manual_assessor", "platform_admin");
-  const review = useMutation({
-    mutationFn: (body: { decision: string; rationale: string; expires_at: string }) => apiWrite(`/api/v1/findings/${id}/review`, body),
-    onSuccess: async () => { toast("ok", "Manual assessment recorded"); await refresh(); },
-    onError: (error) => toast("err", error.message),
+  const detail = useQuery({
+    queryKey: ['finding', id],
+    queryFn: ({ signal }) => apiGet<FindingDetail>(`/api/v1/findings/${id}`, signal),
   });
-  const canWork = hasRole(principal.data?.roles, "analyst", "scan_operator", "platform_admin");
+  const { copied, copy } = useCopy();
 
-  const refresh = async () => { await Promise.all([cache.invalidateQueries({ queryKey: ["finding", id] }), cache.invalidateQueries({ queryKey: ["findings"] }), cache.invalidateQueries({ queryKey: ["overview"] })]); };
-  const patch = useMutation({
-    mutationFn: (body: { owner_id?: string; due_at?: string; comment?: string }) => apiWrite(`/api/v1/findings/${id}`, body, { method: "PATCH" }),
-    onSuccess: async () => { toast("ok", "Finding updated"); await refresh(); },
-    onError: (error) => toast("err", error.message),
-  });
-  const exception = useMutation({
-    mutationFn: (body: { asset_id: string; control_key: string; reason: string; compensating_controls: string; expires_at: string }) => apiWrite("/api/v1/exceptions", body),
-    onSuccess: async () => { toast("ok", "Exception requested — awaiting an independent approver"); setShowException(false); await refresh(); await cache.invalidateQueries({ queryKey: ["exceptions"] }); },
-    onError: (error) => toast("err", error instanceof ApiError ? error.message : "Request failed"),
-  });
-
+  if (detail.isPending) {
+    return <SheetContent><p className="text-sm text-[var(--body-muted)]">Loading finding…</p></SheetContent>;
+  }
+  if (detail.isError || !detail.data) {
+    return <SheetContent><p className="form-error">{detail.error?.message ?? 'Could not load this finding.'}</p></SheetContent>;
+  }
   const f = detail.data;
-  const failing = f?.last_result?.status === "FAIL";
+  const result = f.last_result;
+  const expected = (result?.expected ?? {}) as { fact?: string; operator?: string; value?: unknown };
+  const actualMap = (result?.actual ?? {}) as Record<string, unknown>;
+  const factKey = expected.fact ?? '';
+  const observed = factKey in actualMap ? actualMap[factKey] : undefined;
+  const evidence = (result?.evidence ?? []) as Array<{ reader_id?: string; artifact_sha256?: string; pointer?: { lines?: number[] } }>;
+  const commands = f.remediation?.steps.join('\n') ?? '';
+
   return (
-    <Drawer title={f?.title ?? "Finding"} onClose={onClose} meta={f && <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><SeverityChip severity={f.severity} /><StateChip state={f.state} />{f.exception_state && <Chip tone="APPROVED">Exception active</Chip>}</div>}>
-      {detail.isPending && <Skeleton rows={6} />}
-      {detail.isError && <ErrorNotice error={detail.error} />}
-      {f && (
-        <>
-          <section>
-            <p className="section-title">Expected vs observed</p>
-            <div className="compare">
-              <div className="expected"><small>Expected</small><code>{show(f.last_result?.expected.value ?? f.last_result?.expected.description)}</code>{f.last_result?.expected.operator ? <span className="cell-sub">operator: {String(f.last_result.expected.operator)}</span> : null}</div>
-              <div className={`actual ${failing ? "bad" : ""}`}><small>Observed</small><code>{observed(f.last_result?.actual, f.last_result?.expected.fact)}</code><span className="cell-sub">{f.last_result ? label(f.last_result.reason_code) : ""}</span></div>
+    <>
+      <SheetHeader>
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`chip ${result?.status === 'FAIL' ? 'fail' : 'neutral'}`}>{result?.status ?? f.state}</span>
+          <SeverityChip severity={f.severity} />
+          <span className="font-mono text-xs text-[var(--body-muted)]">{f.asset_name}</span>
+        </div>
+        <SheetTitle className="text-xl leading-snug">{f.title}</SheetTitle>
+        <SheetDescription className="font-mono text-xs mt-1">{f.control_key}</SheetDescription>
+      </SheetHeader>
+
+      <SheetContent className="space-y-6">
+        {/* Expected vs actual */}
+        <section>
+          <h4 className="drawer-title"><FileCheck2 className="w-4 h-4" /> Expected vs. actual configuration</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="compare-card expected">
+              <span>Expected (policy)</span>
+              <code>{factLabel(factKey)} {OPERATORS[expected.operator ?? ''] ?? expected.operator} {show(expected.value)}</code>
+              <small className="font-mono">{factKey}</small>
             </div>
-          </section>
-          <section>
-            <p className="section-title">Details</p>
-            <dl className="kv">
-              <dt>Asset</dt><dd>{f.asset_name}</dd>
-              <dt>Control</dt><dd><code>{f.control_key}</code> (rev {f.control_revision})</dd>
-              <dt>Assessment</dt><dd>{f.last_result ? label(f.last_result.assessment_quality) : "—"}</dd>
-              <dt>First seen</dt><dd>{when(f.first_seen_at)}</dd>
-              <dt>Last seen</dt><dd>{when(f.last_seen_at)}</dd>
-              <dt>Owner</dt><dd>{f.owner_email ?? "Unassigned"}</dd>
-              <dt>Due</dt><dd>{when(f.due_at)}</dd>
-            </dl>
-          </section>
-          {f.remediation && (
-            <section>
-              <p className="section-title">Reviewed remediation plan</p>
-              <p style={{ marginBottom: 10 }}>{f.remediation.summary}</p>
-              <CodeBlock lines={f.remediation.steps} />
-              <dl className="kv" style={{ marginTop: 12 }}>
-                <dt>Verify</dt><dd><code>{f.remediation.verify}</code></dd>
-                <dt>Impact</dt><dd>{f.remediation.impact}</dd>
-                <dt>Authority</dt><dd>{f.remediation.authority}</dd>
-              </dl>
-              <p className="quiet" style={{ marginTop: 10 }}>BaselineGuard never changes target configuration. Apply through your change process, then rescan — only a newer passing result closes this finding.</p>
-            </section>
-          )}
-          {canWork && f.state !== "RESOLVED" && (
-            <section>
-              <p className="section-title">Workflow</p>
-              <WorkflowForm users={users.data?.items ?? []} busy={patch.isPending} onSubmit={(body) => patch.mutate(body)} />
-              {f.state === "OPEN" && <button className="btn sm" style={{ marginTop: 12 }} onClick={() => setShowException((v) => !v)}>{showException ? "Cancel exception" : "Request risk exception"}</button>}
-              {showException && <ExceptionForm busy={exception.isPending} onSubmit={(body) => exception.mutate({ asset_id: f.asset_id, control_key: f.control_key, ...body })} />}
-            </section>
-          )}
-          {canReview && (
-            <section>
-              <p className="section-title">Manual assessment</p>
-              <form className="form-grid" onSubmit={(e) => { e.preventDefault(); const form = new FormData(e.currentTarget); review.mutate({ decision: String(form.get("decision")), rationale: String(form.get("rationale")), expires_at: new Date(Date.now() + 90 * 86_400_000).toISOString() }); e.currentTarget.reset(); }}>
-                <label className="field">Decision<select name="decision"><option value="CONFIRMED_FAIL">Confirm failure</option><option value="CONFIRMED_PASS">Confirm pass (needs rescan to close)</option><option value="REJECTED_ASSESSMENT">Reject automated assessment</option></select></label>
-                <label className="field">Rationale<textarea name="rationale" required minLength={10} maxLength={2000} /></label>
-                <button className="btn" disabled={review.isPending}>Record assessment (valid 90 days)</button>
-              </form>
-            </section>
-          )}
-          {f.exceptions.length > 0 && (
-            <section><p className="section-title">Exceptions</p>
-              {f.exceptions.map((e) => <p key={e.id} style={{ marginBottom: 6 }}><StateChip state={e.state} /> <span className="quiet">expires {when(e.expires_at)}</span><br />{e.reason}</p>)}
-            </section>
-          )}
-          <section>
-            <p className="section-title">History</p>
-            <div className="timeline">
-              {f.events.map((event, i) => (
-                <div className="timeline-item" key={i}>
-                  {label(event.kind)}{typeof event.payload.comment === "string" ? `: ${event.payload.comment}` : ""}
-                  <small>{when(event.at)}{event.actor ? ` · ${event.actor}` : ""}</small>
+            <div className={`compare-card ${result?.status === 'FAIL' ? 'actual-fail' : 'actual'}`}>
+              <span>Actual (device)</span>
+              <code>{factLabel(factKey)} = {show(observed)}</code>
+              <small>{result?.reason_code === 'ASSERTION_FAILED' ? 'Observed value violates the policy' : result?.reason_code?.replaceAll('_', ' ').toLowerCase()}</small>
+            </div>
+          </div>
+        </section>
+
+        {/* Evidence */}
+        <section>
+          <h4 className="drawer-title"><Terminal className="w-4 h-4" /> Evidence</h4>
+          {evidence.length === 0 ? (
+            <p className="text-xs text-[var(--body-muted)]">This result came from imported evidence without raw reader output.</p>
+          ) : (
+            <div className="evidence-list">
+              {evidence.map((e, index) => (
+                <div key={index}>
+                  <code>{e.reader_id}</code>
+                  <span>lines {e.pointer?.lines?.join('–')}</span>
+                  <span className="font-mono" title={e.artifact_sha256}>sha256:{e.artifact_sha256?.slice(0, 16)}…</span>
                 </div>
               ))}
             </div>
+          )}
+        </section>
+
+        {/* Remediation */}
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="drawer-title !mb-0"><ShieldAlert className="w-4 h-4" /> Remediation</h4>
+            {f.remediation && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => copy(commands, 'fix')}>
+                {copied === 'fix' ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy commands</>}
+              </Button>
+            )}
+          </div>
+          {f.remediation ? (
+            <>
+              <p className="text-sm text-[var(--body)] mb-2">{f.remediation.summary}</p>
+              <pre className="code-block">{commands}</pre>
+              <dl className="remediation-meta">
+                <dt>Verify</dt><dd><code>{f.remediation.verify}</code></dd>
+                <dt>Authority</dt><dd>{f.remediation.authority}</dd>
+                <dt>Impact</dt><dd>{f.remediation.impact}</dd>
+              </dl>
+              <p className="text-xs text-[var(--body-muted)] mt-2">Bastion never applies changes. Apply through your change process, then re-scan to close the finding.</p>
+            </>
+          ) : (
+            <p className="text-xs text-[var(--body-muted)]">No remediation template is linked to this control.</p>
+          )}
+        </section>
+
+        {/* History */}
+        {f.events.length > 0 && (
+          <section>
+            <h4 className="drawer-title"><History className="w-4 h-4" /> History</h4>
+            <ol className="history-list">
+              {f.events.slice(0, 8).map((e, index) => (
+                <li key={index}><b>{e.kind.replaceAll('_', ' ').toLowerCase()}</b><span>{when(e.at)}</span></li>
+              ))}
+            </ol>
           </section>
-        </>
-      )}
-    </Drawer>
+        )}
+
+        <ExceptionForm finding={f} />
+      </SheetContent>
+
+      <SheetFooter>
+        <Button variant="outline" size="sm" onClick={onClose}>Close</Button>
+      </SheetFooter>
+    </>
   );
 }
 
-function WorkflowForm({ users, busy, onSubmit }: { users: Array<{ id: string; email: string }>; busy: boolean; onSubmit: (body: { owner_id?: string; due_at?: string; comment?: string }) => void }) {
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const body: { owner_id?: string; due_at?: string; comment?: string } = {};
-    if (form.get("owner")) body.owner_id = String(form.get("owner"));
-    if (form.get("due")) body.due_at = new Date(`${String(form.get("due"))}T12:00:00Z`).toISOString();
-    if (String(form.get("comment")).trim()) body.comment = String(form.get("comment")).trim();
-    if (Object.keys(body).length === 0) return;
-    onSubmit(body);
-    event.currentTarget.reset();
-  }
-  return (
-    <form className="form-grid" onSubmit={submit}>
-      <div className="form-grid two">
-        <label className="field">Owner<select name="owner" defaultValue=""><option value="">Keep current</option>{users.map((u) => <option key={u.id} value={u.id}>{u.email}</option>)}</select></label>
-        <label className="field">Due date<input type="date" name="due" /></label>
-      </div>
-      <label className="field">Comment<input name="comment" maxLength={2000} placeholder="Add a note to the history" /></label>
-      <button className="btn primary" disabled={busy}>{busy ? "Saving…" : "Save changes"}</button>
-    </form>
-  );
-}
-
-function ExceptionForm({ busy, onSubmit }: { busy: boolean; onSubmit: (body: { reason: string; compensating_controls: string; expires_at: string }) => void }) {
+function ExceptionForm({ finding }: { finding: FindingDetail }) {
+  const principal = usePrincipal();
+  const cache = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [controls, setControls] = useState('');
   const [days, setDays] = useState(30);
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    onSubmit({ reason: String(form.get("reason")), compensating_controls: String(form.get("compensating")), expires_at: new Date(Date.now() + days * 86_400_000).toISOString() });
-  }
+  const canRequest = hasRole(principal.data?.roles, 'analyst', 'platform_admin', 'scan_operator');
+  const pending = finding.exceptions.find((e) => e.state === 'REQUESTED' || e.state === 'APPROVED');
+
+  const submit = useMutation({
+    mutationFn: () => apiWrite('/api/v1/exceptions', {
+      asset_id: finding.asset_id,
+      control_key: finding.control_key,
+      reason,
+      compensating_controls: controls,
+      expires_at: new Date(Date.now() + days * 86_400_000).toISOString(),
+    }),
+    onSuccess: async () => {
+      setOpen(false);
+      setReason('');
+      setControls('');
+      await Promise.all(['finding', 'findings', 'exceptions'].map((key) => cache.invalidateQueries({ queryKey: [key] })));
+    },
+  });
+
+  if (!canRequest) return null;
   return (
-    <form className="form-grid" style={{ marginTop: 14 }} onSubmit={submit}>
-      <label className="field">Justification<textarea name="reason" required minLength={10} maxLength={2000} placeholder="Why is this deviation temporarily acceptable?" /></label>
-      <label className="field">Compensating controls<textarea name="compensating" required minLength={10} maxLength={2000} placeholder="What reduces the risk in the meantime?" /></label>
-      <label className="field">Expires in {days} days<input type="range" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} /></label>
-      <p className="quiet">A different person with the risk-approver role must approve this. Expiry automatically restores the finding to actionable.</p>
-      <button className="btn primary" disabled={busy}>{busy ? "Submitting…" : "Submit for approval"}</button>
-    </form>
+    <section className="p-4 rounded-2xl border border-[var(--line)] space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h5 className="font-semibold text-sm text-[var(--heading)]">Risk exception</h5>
+          <p className="text-xs text-[var(--body-muted)]">
+            {pending ? `An exception is ${pending.state.toLowerCase()} (expires ${when(pending.expires_at)}).` : 'Time-boxed; a different person must approve it.'}
+          </p>
+        </div>
+        {!pending && (
+          <Button variant="outline" size="sm" onClick={() => setOpen(!open)} className="text-xs">
+            {open ? 'Cancel' : 'Request exception'}
+          </Button>
+        )}
+      </div>
+      {open && (
+        <form className="space-y-3 pt-3 border-t border-[var(--line)]" onSubmit={(e) => { e.preventDefault(); submit.mutate(); }}>
+          <Input placeholder="Business justification" value={reason} onChange={(e) => setReason(e.target.value)} required minLength={10} />
+          <Input placeholder="Compensating controls in place" value={controls} onChange={(e) => setControls(e.target.value)} required minLength={10} />
+          <label className="flex items-center gap-2 text-xs text-[var(--body)]">
+            Expires in
+            <select value={days} onChange={(e) => setDays(Number(e.target.value))} className="px-2 py-1 rounded-lg border border-[var(--line-strong)] bg-[var(--surface)]">
+              {[7, 30, 60, 90].map((d) => <option key={d} value={d}>{d} days</option>)}
+            </select>
+          </label>
+          {submit.isError && <p className="form-error">{submit.error.message}</p>}
+          <Button type="submit" variant="primary" size="sm" disabled={submit.isPending}>
+            {submit.isPending ? 'Submitting…' : 'Submit for approval'}
+          </Button>
+        </form>
+      )}
+    </section>
   );
 }

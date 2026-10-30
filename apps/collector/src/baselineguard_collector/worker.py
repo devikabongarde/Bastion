@@ -10,6 +10,7 @@ fixture files and are stamped `source='fixture'` end to end.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -38,13 +39,16 @@ from baselineguard_persistence.models import (
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
-from baselineguard_collector.snapshot_store import (
+logger = logging.getLogger(__name__)
+
+from baselineguard_collector.snapshot_store import (  # noqa: E402
     CollectionOutcome,
     persist_snapshot,
     read_outputs_from_fixture,
 )
 
 LIVE_ADAPTERS = ("linux-ssh", "windows-local", "fortigate-ssh", "cisco-iosxe")
+SSH_ADAPTERS = frozenset({"linux-ssh", "fortigate-ssh", "cisco-iosxe"})
 FIXTURE_ADAPTERS = (
     "linux-ssh-fixture",
     "cisco-iosxe-fixture",
@@ -61,6 +65,7 @@ class CollectorWorker:
         evidence_root: str,
         master_key_file: str,
         known_hosts_file: str | None = None,
+        allow_loopback_targets: bool = False,
         fixture_root: str | None = None,
         poll_seconds: float = 2.0,
         one_shot: bool = False,
@@ -72,6 +77,7 @@ class CollectorWorker:
         self.evidence_root = evidence_root
         self.master_key_file = master_key_file
         self.known_hosts_file = known_hosts_file
+        self.allow_loopback_targets = allow_loopback_targets
         self.fixture_root = Path(fixture_root) if fixture_root else None
         self.reader_timeout_seconds = reader_timeout_seconds
         self.store = ArtifactStore(evidence_root, master_key_file)
@@ -109,24 +115,23 @@ class CollectorWorker:
                 job.lease_expires_at = datetime.now(UTC) + timedelta(minutes=5)
                 job.attempt = (job.attempt or 0) + 1
                 try:
-                    self._process(db, job, lease_token)
+                    with db.begin_nested():
+                        self._process(db, job, lease_token)
                 except CollectionFailure as failure:
-                    # Retryable transport bounds; non-retryable codes dead-letter.
-                    job.state = "RETRY_WAIT" if failure.retryable else "DEAD_LETTER"
-                    job.lease_owner = None
-                    job.lease_token = None
-                    job.lease_expires_at = None
-                    if failure.retryable:
+                    if failure.retryable and job.attempt < (job.max_attempts or 3):
+                        job.state = "RETRY_WAIT"
+                        job.error_code = failure.code
+                        job.lease_owner = None
+                        job.lease_token = None
+                        job.lease_expires_at = None
                         job.available_at = datetime.now(UTC) + timedelta(
                             seconds=30 * (2 ** job.attempt)
                         )
-                except Exception as error:  # noqa: BLE001 - job pipeline boundary
-                    job.state = "DEAD_LETTER"
-                    job.error_code = "COLLECTOR_UNEXPECTED"
-                    job.lease_owner = None
-                    job.lease_token = None
-                    job.lease_expires_at = None
-                    del error
+                    else:
+                        self._fail_closed(db, job, lease_token, failure.code)
+                except Exception:  # noqa: BLE001 - job pipeline boundary
+                    logger.exception("collector job %s failed unexpectedly", job.id)
+                    self._fail_closed(db, job, lease_token, "COLLECTOR_UNEXPECTED")
             return True
         finally:
             session.close()
@@ -142,17 +147,54 @@ class CollectorWorker:
             return
         target.state = "COLLECTING"
         target.started_at = target.started_at or datetime.now(UTC)
-        try:
-            outcome = self._collect(db, job, asset)
-        except CollectionFailure:
-            raise
+        outcome = self._collect(db, job, asset)
+        # Host-key trust applies to remote SSH collection only; windows-local reads the
+        # machine it runs on, so there is no remote identity to pin.
         if (
             outcome.source == "live"
             and outcome.error_code is None
+            and asset.adapter_id in SSH_ADAPTERS
             and not self._trust_verified(db, asset)
         ):
             outcome.error_code = "TRUST_NOT_VERIFIED"
+        self._finish(db, job, target, outcome, lease_token)
 
+    def _fail_closed(self, db: Session, job: Job, lease_token: UUID, code: str) -> None:
+        """Record a failed collection as an ERROR outcome so the run still completes.
+
+        Every control on the asset then evaluates to ERROR ("collection failed") instead
+        of the target hanging in COLLECTING forever.
+        """
+        job.error_code = code
+        target = db.get(ScanTarget, job.target_id)
+        asset = db.get(Asset, target.asset_id) if target else None
+        if target is None or asset is None:
+            job.state = "DEAD_LETTER"
+            return
+        now = datetime.now(UTC)
+        outcome = CollectionOutcome(
+            adapter_id=asset.adapter_id,
+            reader_outputs=(),
+            error_code=code,
+            source="fixture" if asset.adapter_id in FIXTURE_ADAPTERS else "live",
+            observed_start=now,
+            observed_end=now,
+            identity={**(asset.identity or {}), "adapter_id": asset.adapter_id,
+                      "stable_device_id": str(asset.id)},
+        )
+        try:
+            with db.begin_nested():
+                self._finish(db, job, target, outcome, lease_token)
+        except Exception:  # noqa: BLE001 - last-resort bookkeeping
+            logger.exception("could not record failed collection for job %s", job.id)
+            job.state = "DEAD_LETTER"
+            job.lease_owner = None
+            job.lease_token = None
+            job.lease_expires_at = None
+
+    def _finish(
+        self, db: Session, job: Job, target: ScanTarget, outcome: CollectionOutcome, lease_token: UUID
+    ) -> None:
         snapshot_ref, envelope = persist_snapshot(
             db,
             self.store,
@@ -240,7 +282,7 @@ class CollectorWorker:
     def _collect_cisco_live(
         self, db: Session, job: Job, asset: Asset, identity: dict[str, Any], now: datetime
     ) -> CollectionOutcome:
-        from baselineguard_adapters.cisco_iosxe.reader import IOSXE_READERS, CiscoIOSXEReader
+        from baselineguard_adapters.cisco_iosxe.reader import CiscoIOSXEReader
 
         site = db.get(Site, asset.site_id)
         scope = (site.scope if site is not None else {}) or {}
@@ -251,6 +293,7 @@ class CollectorWorker:
                 allowed_cidrs=tuple(scope.get("allowed_cidrs", [])),
                 allowed_dns_suffixes=tuple(scope.get("allowed_dns_suffixes", [])),
                 allowed_ports=tuple(scope.get("allowed_ports", [])),
+                allow_loopback=self.allow_loopback_targets,
             )
         except ValueError as error:
             raise CollectionFailure(str(error), retryable=False) from None
@@ -262,9 +305,10 @@ class CollectorWorker:
             timeout_seconds=self.reader_timeout_seconds,
         )
         try:
-            outputs = reader.collect(endpoint, credential, tuple(sorted(IOSXE_READERS)))
+            collection = reader.collect(endpoint, credential)
         except Exception as error:
             raise CollectionFailure(str(error), retryable=False) from None
+        outputs = collection.reader_outputs
         return CollectionOutcome(
             adapter_id=asset.adapter_id,
             reader_outputs=outputs,
@@ -309,6 +353,7 @@ class CollectorWorker:
                 allowed_cidrs=tuple(scope.get("allowed_cidrs", [])),
                 allowed_dns_suffixes=tuple(scope.get("allowed_dns_suffixes", [])),
                 allowed_ports=tuple(scope.get("allowed_ports", [])),
+                allow_loopback=self.allow_loopback_targets,
             )
         except ValueError as error:
             raise CollectionFailure(str(error), retryable=False) from None
@@ -345,6 +390,7 @@ class CollectorWorker:
                 allowed_cidrs=tuple(scope.get("allowed_cidrs", [])),
                 allowed_dns_suffixes=tuple(scope.get("allowed_dns_suffixes", [])),
                 allowed_ports=tuple(scope.get("allowed_ports", [])),
+                allow_loopback=self.allow_loopback_targets,
             )
         except ValueError as error:
             raise CollectionFailure(str(error), retryable=False) from None

@@ -41,6 +41,8 @@ def start_embedded_workers(settings: Settings) -> Callable[[], None]:
         database_url=url,
         evidence_root=settings.evidence_root,
         master_key_file=settings.master_key_file,
+        known_hosts_file=settings.known_hosts_file,
+        allow_loopback_targets=settings.lab_targets and settings.environment != "production",
     )
     stopping = threading.Event()
 

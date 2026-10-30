@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 
 from baselineguard_contracts.api import AssetCreate, AssetRead, Page, SiteCreate, SiteRead
 from baselineguard_contracts.common import PlatformIdentity
-from baselineguard_persistence.models import Asset, Site
+from baselineguard_persistence.models import Asset, AssetCredential, AssetTrust, Site
 from fastapi import APIRouter, Depends, Header, Query, Response
 from pydantic import BaseModel, Field
 from sqlalchemy import desc, select, tuple_
@@ -54,7 +54,45 @@ def _asset_query(principal: Principal, roles: set[str] = READ_ROLES):
     return statement
 
 
-def _to_asset(asset: Asset) -> AssetRead:
+LIVE_SSH_ADAPTERS = {"linux-ssh", "cisco-iosxe", "fortigate-ssh"}
+
+
+def collection_mode(adapter_id: str) -> str:
+    if adapter_id in LIVE_SSH_ADAPTERS:
+        return "live_ssh"
+    if adapter_id == "windows-local":
+        return "live_local"
+    if adapter_id.endswith("-fixture"):
+        return "fixture"
+    return "import"
+
+
+def _readiness(db: Session, org_id: UUID, asset_ids: list[UUID]) -> tuple[dict, set]:
+    if not asset_ids:
+        return {}, set()
+    trusts = {
+        row.asset_id: row
+        for row in db.execute(
+            select(AssetTrust).where(
+                AssetTrust.org_id == org_id,
+                AssetTrust.asset_id.in_(asset_ids),
+                AssetTrust.revoked_at.is_(None),
+            )
+        ).scalars()
+    }
+    bound = set(
+        db.execute(
+            select(AssetCredential.asset_id).where(
+                AssetCredential.org_id == org_id,
+                AssetCredential.asset_id.in_(asset_ids),
+                AssetCredential.purpose == "audit_collect",
+            )
+        ).scalars()
+    )
+    return trusts, bound
+
+
+def _to_asset(asset: Asset, trust: AssetTrust | None = None, credential_bound: bool = False) -> AssetRead:
     return AssetRead(
         id=asset.id,
         org_id=asset.org_id,
@@ -70,6 +108,10 @@ def _to_asset(asset: Asset) -> AssetRead:
         owner_id=asset.owner_id,
         tags=asset.tags,
         archived_at=asset.archived_at.isoformat() if asset.archived_at else None,
+        collection_mode=collection_mode(asset.adapter_id),
+        host_key_fingerprint=trust.fingerprint if trust else None,
+        host_key_verified_at=trust.verified_at.isoformat() if trust else None,
+        credential_bound=credential_bound,
     )
 
 
@@ -219,7 +261,11 @@ def list_assets(
         next_cursor = encode_cursor(
             org_id=principal.org_id, route="assets", created_at=last.created_at, object_id=last.id
         )
-    return Page[AssetRead](items=[_to_asset(asset) for asset in page], next_cursor=next_cursor)
+    trusts, bound = _readiness(db, principal.org_id, [asset.id for asset in page])
+    return Page[AssetRead](
+        items=[_to_asset(asset, trusts.get(asset.id), asset.id in bound) for asset in page],
+        next_cursor=next_cursor,
+    )
 
 
 @router.post("/assets", response_model=AssetRead, status_code=201)

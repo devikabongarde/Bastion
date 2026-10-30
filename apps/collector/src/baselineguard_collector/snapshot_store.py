@@ -18,6 +18,7 @@ from baselineguard_adapters.orchestrate import normalize_outputs
 from baselineguard_contracts.common import CollectionEnvelope, FactState, NormalizedFact
 from baselineguard_evidence.bundle import ArtifactStore, sha256_hex
 from baselineguard_persistence.models import Artifact, EvidenceRef, Snapshot
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
@@ -44,9 +45,7 @@ class CollectionOutcome:
         self.identity = identity
 
 
-def read_outputs_from_fixture(
-    fixture: dict[str, str], adapter_id: str
-) -> tuple[ReadOutput, ...]:
+def read_outputs_from_fixture(fixture: dict[str, str], adapter_id: str) -> tuple[ReadOutput, ...]:
     """Build trusted ReadOutputs from a declared fixture mapping reader_id->text.
 
     Fixture bundles are labeled sources only; the caller records
@@ -55,10 +54,14 @@ def read_outputs_from_fixture(
     outputs: list[ReadOutput] = []
     if adapter_id.startswith("linux"):
         valid = {
-            "linux.identity.uname", "linux.identity.os_release",
-            "linux.ssh.effective_config", "linux.kernel.security_sysctl",
-            "linux.files.security_modes", "linux.auth.umask_defaults",
-            "linux.auditd.active", "linux.time.ntp_state",
+            "linux.identity.uname",
+            "linux.identity.os_release",
+            "linux.ssh.effective_config",
+            "linux.kernel.security_sysctl",
+            "linux.files.security_modes",
+            "linux.auth.umask_defaults",
+            "linux.auditd.active",
+            "linux.time.ntp_state",
         }
     elif adapter_id.startswith("cisco-iosxe"):
         valid = {
@@ -106,6 +109,17 @@ def read_outputs_from_fixture(
     return tuple(outputs)
 
 
+def _existing_artifact_id(db: Session, org_id: UUID, storage_key: str) -> UUID | None:
+    """Content-addressed storage: identical evidence reuses the first artifact row.
+
+    The stored envelope stays bound to that first artifact id, so reusing it keeps the
+    blob decryptable and makes re-scanning an unchanged device succeed.
+    """
+    return db.execute(
+        select(Artifact.id).where(Artifact.org_id == org_id, Artifact.storage_key == storage_key)
+    ).scalar_one_or_none()
+
+
 def persist_snapshot(
     db: Session,
     store: ArtifactStore,
@@ -117,9 +131,7 @@ def persist_snapshot(
     collector_id: UUID,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Write snapshot + artifact + evidence references and return (snapshot, envelope)."""
-    facts = normalize_outputs(
-        [(output.reader_id, output) for output in outcome.reader_outputs]
-    )
+    facts = normalize_outputs([(output.reader_id, output) for output in outcome.reader_outputs])
 
     raw_payload = json.dumps(
         {
@@ -143,6 +155,8 @@ def persist_snapshot(
         media_type="application/json",
         classification="redacted",
     )
+    raw_existing = _existing_artifact_id(db, org_id, raw_meta["storage_key"])
+    raw_artifact_id = raw_existing or raw_artifact_id
 
     identity = dict(outcome.identity)
     identity.setdefault("adapter_id", outcome.adapter_id)
@@ -152,7 +166,9 @@ def persist_snapshot(
                 "fact_id": f.fact_id,
                 "state": f.state.value,
                 "value": f.value,
-                "source": f.source,
+                # EvidencePointer must serialize as an object; `default=str` would emit its
+                # repr and the evaluator would reject every live fact as malformed.
+                "source": f.source.model_dump(mode="json") if f.source is not None else None,
             }
             for f in facts
         ],
@@ -167,6 +183,8 @@ def persist_snapshot(
         media_type="application/json",
         classification="normalized",
     )
+    facts_existing = _existing_artifact_id(db, org_id, facts_meta["storage_key"])
+    facts_artifact_id = facts_existing or facts_artifact_id
 
     snapshot_digest = sha256_hex(facts_json)
     now = datetime.now(UTC)
@@ -193,32 +211,34 @@ def persist_snapshot(
     )
     db.add(snapshot)
     db.flush()
-    db.add(
-        Artifact(
-            id=raw_artifact_id,
-            org_id=org_id,
-            storage_key=raw_meta["storage_key"],
-            sha256=raw_meta["sha256"],
-            media_type=raw_meta["media_type"],
-            size_bytes=raw_meta["size_bytes"],
-            classification="redacted",
-            encrypted=True,
-            key_version=raw_meta["key_version"],
+    if raw_existing is None:
+        db.add(
+            Artifact(
+                id=raw_artifact_id,
+                org_id=org_id,
+                storage_key=raw_meta["storage_key"],
+                sha256=raw_meta["sha256"],
+                media_type=raw_meta["media_type"],
+                size_bytes=raw_meta["size_bytes"],
+                classification="redacted",
+                encrypted=True,
+                key_version=raw_meta["key_version"],
+            )
         )
-    )
-    db.add(
-        Artifact(
-            id=facts_artifact_id,
-            org_id=org_id,
-            storage_key=facts_meta["storage_key"],
-            sha256=facts_meta["sha256"],
-            media_type=facts_meta["media_type"],
-            size_bytes=facts_meta["size_bytes"],
-            classification="normalized",
-            encrypted=True,
-            key_version=facts_meta["key_version"],
+    if facts_existing is None and facts_artifact_id != raw_artifact_id:
+        db.add(
+            Artifact(
+                id=facts_artifact_id,
+                org_id=org_id,
+                storage_key=facts_meta["storage_key"],
+                sha256=facts_meta["sha256"],
+                media_type=facts_meta["media_type"],
+                size_bytes=facts_meta["size_bytes"],
+                classification="normalized",
+                encrypted=True,
+                key_version=facts_meta["key_version"],
+            )
         )
-    )
     for output in outcome.reader_outputs:
         db.add(
             EvidenceRef(
@@ -285,7 +305,7 @@ def _completeness(outcome: CollectionOutcome, facts: list[Any]) -> dict[str, Any
     if unavailable:
         return {
             "status": "PARTIAL",
-            "non_present_facts": len(unavailable),
+            "non_present_facts": str(len(unavailable)),
         }
     return {"status": "COMPLETE"}
 
@@ -300,7 +320,5 @@ def load_snapshot_facts(
     blob = store.read(str(org_id), str(facts_artifact["id"]), facts_artifact["storage_key"])
     payload = json.loads(blob)
     return [
-        NormalizedFact.model_validate(item)
-        for item in payload
-        if set(item) >= {"fact_id", "state"}
+        NormalizedFact.model_validate(item) for item in payload if set(item) >= {"fact_id", "state"}
     ]

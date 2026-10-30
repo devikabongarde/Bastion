@@ -51,7 +51,7 @@ function Test-BaselineGuardWeb {
     param([int]$Port)
     try {
         $page = Invoke-WebRequest -Uri "http://127.0.0.1:$Port/" -TimeoutSec 3 -UseBasicParsing
-        return $page.StatusCode -eq 200 -and $page.Content -match '<title>BaselineGuard</title>'
+        return $page.StatusCode -eq 200 -and $page.Content -match '<title>(BaselineGuard|Bastion)'
     } catch {
         return $false
     }

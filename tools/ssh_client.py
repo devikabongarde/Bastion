@@ -6,7 +6,9 @@ Usage:
 
 import sys
 import time
+
 import paramiko
+
 
 def main():
     if hasattr(sys.stdout, "reconfigure"):

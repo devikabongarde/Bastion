@@ -37,3 +37,34 @@ def test_route_prefix_is_versioned_once() -> None:
     assert "/api/v1/policy-drafts" in paths
     assert "/api/v1/policy-drafts/{policy_id}/publish" in paths
     assert "/api/v1/api/v1/assets" not in paths
+
+
+def test_demo_login_is_rejected_in_production() -> None:
+    import pytest
+    from pydantic import ValidationError
+
+    from baselineguard_api.config import Settings
+
+    with pytest.raises(ValidationError, match="BG_DEMO_LOGIN"):
+        Settings(
+            _env_file=None,
+            environment="production",
+            session_secret="x" * 40,
+            demo_login=True,
+        )
+
+
+def test_demo_login_route_is_hidden_when_disabled(monkeypatch) -> None:
+    from baselineguard_api.config import Settings
+    from baselineguard_api.routes.v1 import auth
+
+    monkeypatch.setattr(auth, "get_settings", lambda: Settings(_env_file=None))
+    client = TestClient(app)
+    assert client.get("/api/v1/auth/options").json() == {"demo_login": False}
+    response = client.post(
+        "/api/v1/auth/demo-login",
+        json={"organization": "northwind", "username": "ava", "password": "anything"},
+    )
+    assert response.status_code == 404
+    code = client.post("/api/v1/auth/demo-code", json={"challenge": "0" * 60})
+    assert code.status_code == 404

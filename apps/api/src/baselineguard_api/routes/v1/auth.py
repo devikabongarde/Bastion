@@ -24,7 +24,13 @@ from baselineguard_api.audit import append_audit_event
 from baselineguard_api.config import get_settings
 from baselineguard_api.crypto import unseal
 from baselineguard_api.errors import AppError
-from baselineguard_api.identity import recovery_hash, token_hash, verify_password, verify_totp
+from baselineguard_api.identity import (
+    recovery_hash,
+    token_hash,
+    totp_code,
+    verify_password,
+    verify_totp,
+)
 from baselineguard_api.security import SESSION_COOKIE, Principal, csrf_token, require_principal
 
 router = APIRouter(prefix="/auth", tags=["identity"])
@@ -203,25 +209,8 @@ def verify_mfa(body: MFAVerifyRequest, request: Request, response: Response) -> 
                         user.last_totp_step = step
             if valid and user:
                 challenge.consumed_at = now
-                raw_session = f"{org_id}.{secrets.token_urlsafe(32)}"
-                db.add(
-                    AuthSession(
-                        id=uuid4(),
-                        org_id=org_id,
-                        user_id=user.id,
-                        token_hash=token_hash(raw_session),
-                        mfa_verified_at=now,
-                        last_seen_at=now,
-                        expires_at=now + timedelta(hours=12),
-                    )
-                )
-                append_audit_event(
-                    db,
-                    Principal(user.id, org_id, frozenset(), frozenset()),
-                    action="auth.signed_in",
-                    object_type="user",
-                    object_id=user.id,
-                    details={"factor": "recovery" if body.recovery_code else "totp"},
+                raw_session = _open_session(
+                    db, org_id, user, now, factor="recovery" if body.recovery_code else "totp"
                 )
     if raw_session is None:
         raise AppError(
@@ -230,6 +219,34 @@ def verify_mfa(body: MFAVerifyRequest, request: Request, response: Response) -> 
             "Verification failed",
             "The challenge or verification code is invalid.",
         )
+    return _authenticated(response, raw_session)
+
+
+def _open_session(db: Session, org_id: UUID, user: User, now: datetime, *, factor: str) -> str:
+    raw_session = f"{org_id}.{secrets.token_urlsafe(32)}"
+    db.add(
+        AuthSession(
+            id=uuid4(),
+            org_id=org_id,
+            user_id=user.id,
+            token_hash=token_hash(raw_session),
+            mfa_verified_at=now,
+            last_seen_at=now,
+            expires_at=now + timedelta(hours=12),
+        )
+    )
+    append_audit_event(
+        db,
+        Principal(user.id, org_id, frozenset(), frozenset()),
+        action="auth.signed_in",
+        object_type="user",
+        object_id=user.id,
+        details={"factor": factor},
+    )
+    return raw_session
+
+
+def _authenticated(response: Response, raw_session: str) -> dict[str, str]:
     response.set_cookie(
         SESSION_COOKIE,
         raw_session,
@@ -240,6 +257,102 @@ def verify_mfa(body: MFAVerifyRequest, request: Request, response: Response) -> 
         max_age=43200,
     )
     return {"status": "authenticated", "csrf_token": csrf_token(raw_session)}
+
+
+def _demo_login_enabled() -> bool:
+    settings = get_settings()
+    return settings.demo_login and settings.environment != "production"
+
+
+@router.get("/options")
+def sign_in_options() -> dict[str, bool]:
+    """Public: tells the sign-in page which methods this deployment offers."""
+    return {"demo_login": _demo_login_enabled()}
+
+
+class DemoCodeRequest(Contract):
+    challenge: str = Field(min_length=60, max_length=256)
+
+
+@router.post("/demo-code")
+def demo_code(body: DemoCodeRequest, request: Request) -> dict[str, str]:
+    """Demo only: return the current authenticator code for a pending, password-verified
+    challenge so the MFA step can be shown quickly. Disabled unless BG_DEMO_LOGIN=true."""
+    if not _demo_login_enabled():
+        raise AppError(404, "NOT_FOUND", "Not found", "Demo sign-in is not enabled.")
+    _rate_limit(request, "demo-code:" + body.challenge)
+    invalid = AppError(401, "INVALID_MFA", "Verification failed", "The challenge is invalid.")
+    try:
+        org_id = UUID(body.challenge.split(".", 1)[0])
+    except ValueError:
+        raise invalid from None
+    now = datetime.now(UTC)
+    with Session(get_engine(get_settings().database_url)) as db, db.begin():
+        _scope(db, org_id)
+        challenge = db.execute(
+            select(AuthChallenge).where(
+                AuthChallenge.token_hash == token_hash(body.challenge),
+                AuthChallenge.org_id == org_id,
+            )
+        ).scalar_one_or_none()
+        if not challenge or challenge.consumed_at is not None or challenge.expires_at <= now:
+            raise invalid
+        user = db.get(User, challenge.user_id)
+        if not user or user.disabled_at is not None or not user.totp_ciphertext:
+            raise invalid
+        try:
+            secret = unseal(
+                user.totp_ciphertext,
+                binding=f"{org_id}/{user.id}/totp",
+                master_key_file=get_settings().master_key_file,
+            )
+        except (OSError, ValueError, InvalidTag):
+            raise AppError(
+                503, "KEY_UNAVAILABLE", "Sign-in unavailable", "The local key provider is unavailable."
+            ) from None
+        # Codes are single-use: if this window's code was already spent, hand out the next one
+        # (verification accepts one step ahead).
+        step = max(int(now.timestamp() // 30), user.last_totp_step + 1)
+        return {"code": totp_code(secret, step)}
+
+
+@router.post("/demo-login")
+def demo_login(body: LoginRequest, request: Request, response: Response) -> dict[str, str]:
+    """Password-only sign-in for live demos. Disabled unless BG_DEMO_LOGIN=true (never in
+    production). The password is still verified and the session is audited as MFA-skipped."""
+    if not _demo_login_enabled():
+        raise AppError(404, "NOT_FOUND", "Not found", "Demo sign-in is not enabled.")
+    username = body.username.casefold()
+    _rate_limit(request, body.organization + ":" + username)
+    now = datetime.now(UTC)
+    raw_session = None
+    with Session(get_engine(get_settings().database_url)) as db, db.begin():
+        org_id = db.execute(
+            select(Organization.id).where(
+                Organization.slug == body.organization, Organization.status == "active"
+            )
+        ).scalar_one_or_none()
+        user = None
+        if org_id:
+            _scope(db, org_id)
+            user = db.execute(
+                select(User).where(
+                    User.org_id == org_id, User.auth_provider == "local", User.subject == username
+                )
+            ).scalar_one_or_none()
+        valid = verify_password(
+            user.password_hash if user else None, body.password.get_secret_value()
+        )
+        if valid and user and org_id and user.disabled_at is None:
+            raw_session = _open_session(db, org_id, user, now, factor="demo-password-only")
+    if raw_session is None:
+        raise AppError(
+            401,
+            "INVALID_CREDENTIALS",
+            "Sign-in failed",
+            "The sign-in details are invalid or the account is unavailable.",
+        )
+    return _authenticated(response, raw_session)
 
 
 @router.post("/logout", status_code=204)

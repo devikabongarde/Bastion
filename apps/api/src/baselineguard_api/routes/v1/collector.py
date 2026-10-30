@@ -230,15 +230,19 @@ def fail_collector_job(
     if job is None:
         raise AppError(404, "NOT_FOUND", "Not found", "Job not found.")
 
-    job.state = "FAILED"
-    job.last_error = {"reason": reason, "failed_at": datetime.now(UTC).isoformat()}
+    error_code = reason[:64]
+    job.state = "DEAD_LETTER"
+    job.error_code = error_code
     job.lease_owner = None
     job.lease_token = None
+    job.lease_expires_at = None
 
     if job.target_id:
         target = db.get(ScanTarget, job.target_id)
         if target:
             target.state = "FAILED"
+            target.error_code = error_code
+            target.finished_at = target.finished_at or datetime.now(UTC)
 
     db.flush()
     return {"status": "recorded"}

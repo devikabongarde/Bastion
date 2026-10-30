@@ -24,10 +24,12 @@ from baselineguard_persistence.models import (
     Policy,
     PolicyPack,
     RulePack,
+    ScanTarget,
     Snapshot,
 )
 from baselineguard_rule_engine.canonical import semantic_digest
-from baselineguard_rule_engine.evaluator import evaluate_control
+from baselineguard_rule_engine.evaluator import evaluate_control, evaluate_expression
+from baselineguard_rule_engine.logic import Truth
 from baselineguard_rule_engine.resolve import resolve_controls
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -88,7 +90,18 @@ class EvaluationWorker:
                 job.lease_expires_at = datetime.now(UTC) + timedelta(minutes=5)
                 job.attempt = (job.attempt or 0) + 1
                 try:
-                    self._process(db, job, lease_token)
+                    with db.begin_nested():
+                        self._process(db, job, lease_token)
+                except Exception:  # noqa: BLE001 - job pipeline boundary
+                    # Never leave a poison job QUEUED: it would be retried forever and block
+                    # every other evaluation behind it.
+                    logger.exception("evaluation job %s failed", job.id)
+                    job.state = "DEAD_LETTER"
+                    job.error_code = "EVALUATOR_UNEXPECTED"
+                    target = db.get(ScanTarget, job.target_id) if job.target_id else None
+                    if target is not None:
+                        target.state = "FAILED"
+                        target.finished_at = datetime.now(UTC)
                 finally:
                     job.lease_owner = None
                     job.lease_token = None
@@ -144,7 +157,12 @@ class EvaluationWorker:
             job.error_code = "PACK_CONTENT_UNAVAILABLE"
             return
 
-        facts = load_facts(self.store, job.org_id, snapshot)
+        try:
+            facts = load_facts(self.store, job.org_id, snapshot)
+        except Exception:  # noqa: BLE001 - unreadable evidence must surface as ERROR, not hang
+            logger.exception("snapshot %s evidence could not be read", snapshot.id)
+            facts = {}
+            collection_error = collection_error or "EVIDENCE_UNREADABLE"
         engine_digest = semantic_digest(
             {
                 "engine_version": ENGINE_VERSION,
@@ -159,6 +177,7 @@ class EvaluationWorker:
             facts,
             collection_error=collection_error,
             source=source,
+            declared_identity=dict(snapshot.identity or {}),
         )
         result_set_id = finalize(
             db,
@@ -219,8 +238,19 @@ def evaluate_pack_manifests(
     *,
     collection_error: str | None,
     source: str,
+    declared_identity: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     """Evaluate every pack against the snapshot and compute score summary."""
+    # When collection failed there are no facts, but the asset's declared identity still
+    # tells us which controls apply: other platforms' controls are NOT_APPLICABLE and only
+    # the asset's own controls are ERROR.
+    identity_facts: dict[str, Any] = {}
+    if collection_error and declared_identity:
+        for key, field in (("platform.family", "family"), ("platform.role", "role")):
+            if declared_identity.get(field):
+                identity_facts[key] = NormalizedFact(
+                    fact_id=key, state="PRESENT", value=declared_identity[field]
+                )
     controls: list[dict[str, Any]] = []
     view_info: dict[str, Any] = {
         "excluded_count": 0,
@@ -241,11 +271,14 @@ def evaluate_pack_manifests(
 
     results: list[dict[str, Any]] = []
     for control in controls:
-        evaluated = evaluate_control(
-            control,
-            facts,
-            collection_error=collection_error is not None,
-        )
+        if identity_facts and evaluate_expression(control["applicability"], identity_facts) is Truth.FALSE:
+            evaluated = evaluate_control(control, identity_facts)
+        else:
+            evaluated = evaluate_control(
+                control,
+                facts,
+                collection_error=collection_error is not None,
+            )
         evaluated["control_revision"] = int(control.get("revision", 1))
         evaluated["context_key"] = "global"
         evaluated["resource_key"] = "__control__"
@@ -256,8 +289,9 @@ def evaluate_pack_manifests(
         evaluated["title"] = control.get("title")
         raw_evidence: Any = control.get("evidence") or control.get("required_facts") or []
         evidence_keys: list[str] = [str(key) for key in raw_evidence]
+        # Evidence pointers are pydantic models; store them as plain JSON objects.
         evaluated["evidence"] = [
-            fact.source
+            fact.source.model_dump(mode="json")
             for fact in (facts.get(key) for key in evidence_keys)
             if fact is not None and fact.source is not None
         ]

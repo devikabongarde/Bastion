@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "pack_id": "org.baselineguard.linux.phase1",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "BaselineGuard project",
   "license": "Apache-2.0",
   "rights_reference": "Original project-authored demonstration content. No benchmark text or benchmark mapping is included.",
@@ -9,7 +9,7 @@
   "benchmark": null,
   "targets": {
     "family": "ubuntu",
-    "version_range": ">=22.04 <23.0",
+    "version_range": ">=20.04 <23.0",
     "roles": [
       "server",
       "desktop"

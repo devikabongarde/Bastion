@@ -163,3 +163,62 @@ def test_authentication_rate_limit_persists_failed_attempts(identity_lab, monkey
     ]
     assert statuses[:20] == [401] * 20
     assert statuses[-1] == 429
+
+
+def test_demo_login_is_off_by_default(identity_lab):
+    client, *_ = identity_lab
+    assert client.get("/api/v1/auth/options").json() == {"demo_login": False}
+    response = client.post(
+        "/api/v1/auth/demo-login",
+        json={"organization": "any", "username": "operator", "password": "x"},
+    )
+    assert response.status_code == 404
+
+
+def test_demo_login_skips_mfa_but_checks_password_and_audits(identity_lab, monkeypatch):
+    client, conn, org, user, *_ = identity_lab
+    demo = Settings(
+        _env_file=None,
+        environment="test",
+        demo_login=True,
+        master_key_file=auth.get_settings().master_key_file,
+    )
+    monkeypatch.setattr(auth, "get_settings", lambda: demo)
+    assert client.get("/api/v1/auth/options").json() == {"demo_login": True}
+    body = {"organization": f"auth-{org}", "username": "operator"}
+    wrong = client.post("/api/v1/auth/demo-login", json={**body, "password": "incorrect"})
+    assert wrong.status_code == 401
+    response = client.post(
+        "/api/v1/auth/demo-login", json={**body, "password": "test long passphrase"}
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["csrf_token"]
+    me = client.get("/api/v1/me")
+    assert me.status_code == 200 and me.json()["user_id"] == str(user)
+    factor = conn.execute(
+        text(
+            "SELECT redacted_details->>'factor' FROM audit_events "
+            "WHERE org_id = :org AND action = 'auth.signed_in' ORDER BY sequence DESC LIMIT 1"
+        ),
+        {"org": str(org)},
+    ).scalar_one()
+    assert factor == "demo-password-only"
+
+
+def test_demo_code_fills_mfa_only_in_demo_mode(identity_lab, monkeypatch):
+    client, conn, org, user, *_ = identity_lab
+    challenge = sign_in(client, org)
+    assert client.post("/api/v1/auth/demo-code", json={"challenge": challenge}).status_code == 404
+    demo = Settings(
+        _env_file=None,
+        environment="test",
+        demo_login=True,
+        master_key_file=auth.get_settings().master_key_file,
+    )
+    monkeypatch.setattr(auth, "get_settings", lambda: demo)
+    bogus = client.post("/api/v1/auth/demo-code", json={"challenge": f"{org}." + "x" * 60})
+    assert bogus.status_code == 401
+    code = client.post("/api/v1/auth/demo-code", json={"challenge": challenge}).json()["code"]
+    response = client.post("/api/v1/auth/mfa/verify", json={"challenge": challenge, "code": code})
+    assert response.status_code == 200, response.text
+    assert client.get("/api/v1/me").json()["user_id"] == str(user)

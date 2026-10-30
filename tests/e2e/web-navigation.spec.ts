@@ -9,21 +9,30 @@ async function unauthenticated(page: Page) {
   }));
 }
 
-test("unauthenticated visitors see only the sign-in screen and no score", async ({ page }) => {
+test("unauthenticated visitors see the landing page, never the console", async ({ page }) => {
   await unauthenticated(page);
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Sign-in is required/ })).toBeVisible();
-  await expect(page.getByText(/\d+(\.\d+)?%/)).not.toBeVisible();
-  await expect(page.getByRole("link", { name: "Skip to sign in" })).toBeAttached();
+  await expect(page.getByRole("button", { name: "Open the console" }).first()).toBeVisible();
+  await expect(page.locator("#main-content")).toHaveCount(0);
   await page.goto("/findings");
-  await expect(page.getByRole("heading", { name: /Sign-in is required/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open the console" }).first()).toBeVisible();
+  await expect(page.locator("#main-content")).toHaveCount(0);
+});
+
+test("opening the console from the landing page leads to sign-in", async ({ page }) => {
+  await unauthenticated(page);
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open the console" }).first().click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Skip to sign in" })).toBeAttached();
 });
 
 test("the sign-in screen does not overflow a narrow viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await unauthenticated(page);
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: /Sign-in is required/ })).toBeVisible();
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   const d = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, content: document.documentElement.scrollWidth }));
   expect(d.content).toBeLessThanOrEqual(d.viewport);
 });

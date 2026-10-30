@@ -1,6 +1,6 @@
-# 🛡️ BaselineGuard: Complete User Manual, Developer Guide & Demo Runbook
+# 🛡️ Bastion: Complete User Manual, Developer Guide & Demo Runbook
 
-> **System Overview:** BaselineGuard is an enterprise-grade, deterministic CIS Benchmark Compliance & Configuration Hardening platform. It continuously audits heterogeneous operating systems (Linux, Windows Server/Workstation) and network appliances (Cisco IOS XE, Fortinet FortiOS) with zero AI/ML inference, tamper-evident SHA-256 hash chaining, multi-tenant PostgreSQL Row-Level Security (RLS), and dual-custody risk exception workflows.
+> **System Overview:** **Bastion — Every Control. Verified.** is an enterprise-grade, deterministic CIS Benchmark Compliance & Configuration Hardening platform. It continuously audits heterogeneous operating systems (Linux, Windows Server/Workstation) and network appliances (Cisco IOS XE, Fortinet FortiOS) with zero AI/ML inference, tamper-evident SHA-256 hash chaining, multi-tenant PostgreSQL Row-Level Security (RLS), and dual-custody risk exception workflows. Features a premium Semgrep-inspired developer landing page and interactive verification sandbox.
 
 ---
 
@@ -44,20 +44,34 @@ corepack pnpm --filter @baselineguard/web dev
 ```
 *(Confirms with: `VITE ready ... Local: http://127.0.0.1:5173/`)*.
 
-#### Terminal 3 (Optional for Network Simulation): Mock SSH Daemon
+#### Terminal 3 (required for live device audits): Mock network devices
 ```powershell
 .\.venv\Scripts\python.exe tools/mock_targets.py
 ```
-*(Confirms with: `Mock Target SSH Server listening on 127.0.0.1:2222`)*.
+*(Confirms with: `listening on 127.0.0.1:2222` and `Simulates: Ubuntu 22.04 LTS, Cisco Catalyst 9300 (IOS XE 17.12), FortiGate 100F (FortiOS 7.4)`)*.
+
+`.env` must contain (already set on this machine; all three are refused when `BG_ENVIRONMENT=production`):
+```
+BG_DEMO_LOGIN=true      # one-click demo sign-in (skips MFA)
+BG_LAB_TARGETS=true     # allow the loopback mock devices on 127.0.0.1:2222
+BG_EMBEDDED_WORKERS=true
+```
 
 ---
 
-### 1.3 Seeding Demo Enterprise Fleet
-If you ever want to re-seed or refresh the database with 7 heterogeneous enterprise assets, all 120 CIS rule controls, historical compliance assessments, and sample exceptions:
+### 1.3 Bringing the demo fleet up to full scope
+`tools/sync_demo.py` upgrades the existing organization in place (users and MFA secrets untouched) and is safe to re-run:
 ```powershell
-# Run with API running in Terminal 1:
-.\.venv\Scripts\python.exe tools/seed_demo.py --load
+# With Terminals 1 and 3 running:
+.\.venv\Scripts\python.exe tools/sync_demo.py --load
 ```
+It registers the current rule packs (**102 real controls**: Windows 32, Cisco IOS-XE 31, FortiGate 20, Ubuntu 20), publishes the
+*Enterprise Hardening Baseline (Multi-Platform)* policy, adds Windows Server / Cisco router / FortiGate sample assets, and adds
+**live** assets — `core-sw-01` (Cisco switch), `edge-fw-01` (FortiGate), `lab-ubuntu-01` (Ubuntu) on the mock device, plus this
+Windows PC — with the mock device's host key pinned. `--load` imports sample evidence and runs a real live scan (≈5 s).
+
+> Note: on this Windows PC, password/lockout and audit-policy controls show **UNKNOWN** unless the API runs from an elevated
+> (Administrator) terminal — Windows only reveals them to administrators. This is reported honestly, never as PASS or FAIL.
 
 ---
 
@@ -84,6 +98,8 @@ rowan    728156   (valid ~28s)
    * **Password**: `BaselineGuard-Demo-2026`
 3. Click **Sign In**.
 4. When the **Authenticator Code** dialog appears, run `.\.venv\Scripts\python.exe tools/totp.py` and enter the 6-digit number displayed next to your username.
+
+**Quick demo sign-in (skips MFA):** set `BG_DEMO_LOGIN=true` in `.env` and restart the API. The sign-in page then shows **Quick demo access** buttons for `ava` and `rowan` — one click, no authenticator code. To *show* MFA quickly instead, click **Continue** and then **Auto-fill demo code** on the verify step (it types the live code and signs in in ~2 seconds). The password is still checked, every use is written to the audit log as `demo-password-only`, and the API refuses to start if this flag is set with `BG_ENVIRONMENT=production`.
 
 ---
 

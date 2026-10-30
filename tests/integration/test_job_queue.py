@@ -17,6 +17,7 @@ from baselineguard_persistence.models import (
 from sqlalchemy import create_engine, select, text
 from sqlalchemy.orm import Session
 
+from baselineguard_api.routes.v1.collector import fail_collector_job
 from baselineguard_api.routes.v1.scans import cancel_scan
 from baselineguard_api.security import Principal
 from baselineguard_scheduler.queue import claim_jobs, complete_job, lease_is_current, retry_job
@@ -222,6 +223,33 @@ def test_queue_reclaims_expired_lease_and_fences_stale_worker() -> None:
             )
             assert target.state == "CANCELLED"
             assert cancel_scan(run_id, principal, session).status == "CANCELLED"
+            failed_job_id = uuid4()
+            session.add(
+                Job(
+                    id=failed_job_id,
+                    org_id=org_id,
+                    target_id=target_id,
+                    kind="COLLECT",
+                    state="RUNNING",
+                    attempt=1,
+                    max_attempts=3,
+                    available_at=created,
+                    lease_owner=worker_a,
+                    lease_token=uuid4(),
+                    lease_expires_at=datetime.now(UTC) + timedelta(minutes=1),
+                )
+            )
+            session.flush()
+            assert fail_collector_job(failed_job_id, "SSH_UNREACHABLE", principal, session) == {
+                "status": "recorded"
+            }
+            failed_job = session.get(Job, failed_job_id)
+            assert failed_job is not None
+            assert failed_job.state == "DEAD_LETTER"
+            assert failed_job.error_code == "SSH_UNREACHABLE"
+            assert failed_job.lease_token is None
+            assert target.state == "FAILED"
+            assert target.error_code == "SSH_UNREACHABLE"
             session.rollback()
     finally:
         engine.dispose()

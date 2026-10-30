@@ -7,14 +7,15 @@ normalizes the facts, evaluates them deterministically, and outputs the live res
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sys
-import yaml
+from pathlib import Path
 
-from baselineguard_adapters.windows.reader import WindowsReader, WINDOWS_READERS
+import yaml
 from baselineguard_adapters.orchestrate import normalize_outputs
+from baselineguard_adapters.windows.reader import WINDOWS_READERS, WindowsReader
 from baselineguard_rule_engine.evaluator import evaluate_expression
 from baselineguard_rule_engine.logic import Truth
+
 
 def main():
     if hasattr(sys.stdout, "reconfigure"):

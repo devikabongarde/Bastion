@@ -70,8 +70,9 @@ def test_parse_fortios_firewall_policy() -> None:
     facts = {f["key"]: f for f in parse_fortios_firewall_policy(policy_text)}
     assert facts["fortigate.firewall.any_any_allow_count"]["value"] == 1
     assert facts["fortigate.firewall.total_policies"]["value"] == 2
-    assert facts["fortigate.firewall.logtraffic_all_count"]["value"] == 2
-    assert facts["fortigate.firewall.has_default_deny"]["value"] is True
+    assert facts["fortigate.firewall.accept_without_logging_count"]["value"] == 0
+    # No closing deny-all policy exists, so default-deny must not be reported as present.
+    assert facts["fortigate.firewall.has_default_deny"]["value"] is False
 
 
 def test_parse_fortios_syslog() -> None:

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "pack_id": "org.baselineguard.windows.server2019",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "BaselineGuard project",
   "license": "Apache-2.0",
   "rights_reference": "Original project-authored organizational baseline. No benchmark text included.",
@@ -9,11 +9,12 @@
   "benchmark": null,
   "targets": {
     "family": "windows_server",
-    "version_range": ">=2019 <=2022",
+    "version_range": ">=2019",
     "roles": [
       "standalone",
       "member_server",
-      "domain_controller"
+      "domain_controller",
+      "workstation"
     ]
   },
   "parameters": {},
@@ -24,12 +25,15 @@
       "origin": "organizational",
       "title": "Ensure 'Minimum password length' is set to 14 or more characters",
       "severity": "high",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.password.min_length` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Short passwords are brute-forced quickly.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.password.min_length",
@@ -114,12 +118,15 @@
       "origin": "organizational",
       "title": "Ensure 'Password must meet complexity requirements' is enabled",
       "severity": "high",
-      "description": "Evaluates `windows.security_policy.password.complexity` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.password.complexity` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Complexity rules block dictionary passwords.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.password.complexity",
@@ -202,14 +209,17 @@
       "id": "org.win.pwd.max_age",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Maximum password age' is 60 or fewer days (and not 0)",
+      "title": "Ensure 'Maximum password age' is 60 or fewer days",
       "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.max_age_days` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.password.max_age_days` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Limits the useful life of a compromised password.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.password.max_age_days",
@@ -294,12 +304,15 @@
       "origin": "organizational",
       "title": "Ensure 'Minimum password age' is at least 1 day",
       "severity": "low",
-      "description": "Evaluates `windows.security_policy.password.min_age_days` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.password.min_age_days` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Stops users cycling straight back to an old password.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.password.min_age_days",
@@ -382,14 +395,17 @@
       "id": "org.win.pwd.history",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Enforce password history' is set to 24 or more passwords",
+      "title": "Ensure 'Enforce password history' is 24 or more passwords",
       "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.history_count` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.password.history_count` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Prevents password reuse.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.password.history_count",
@@ -472,14 +488,17 @@
       "id": "org.win.lockout.threshold",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Account lockout threshold' is set to 5 or fewer invalid logon attempts",
+      "title": "Ensure 'Account lockout threshold' is 5 or fewer invalid attempts",
       "severity": "high",
-      "description": "Evaluates `windows.security_policy.lockout.threshold` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.lockout.threshold` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Throttles online password guessing.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.lockout.threshold",
@@ -562,14 +581,17 @@
       "id": "org.win.lockout.duration",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Account lockout duration' is set to 15 or more minutes",
+      "title": "Ensure 'Account lockout duration' is 15 or more minutes",
       "severity": "medium",
-      "description": "Evaluates `windows.security_policy.lockout.duration_minutes` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.lockout.duration_minutes` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Keeps locked accounts locked long enough to deter guessing.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.lockout.duration_minutes",
@@ -652,14 +674,17 @@
       "id": "org.win.lockout.reset",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Reset account lockout counter after' is set to 15 or more minutes",
+      "title": "Ensure 'Reset account lockout counter after' is 15 or more minutes",
       "severity": "medium",
-      "description": "Evaluates `windows.security_policy.lockout.reset_minutes` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.security_policy.lockout.reset_minutes` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Defines the observation window for failed logons.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.security_policy.lockout.reset_minutes",
@@ -742,14 +767,17 @@
       "id": "org.win.sec.limit_blank_pwd",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is enabled",
+      "title": "Ensure 'Limit local account use of blank passwords to console logon only' is enabled",
       "severity": "high",
-      "description": "Evaluates `windows.registry.lsa.limit_blank_password_use` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.lsa.limit_blank_password_use` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Blank-password accounts must never be usable over the network.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.lsa.limit_blank_password_use",
@@ -832,14 +860,17 @@
       "id": "org.win.sec.smbv1_disable",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure SMBv1 client and server driver are disabled",
+      "title": "Ensure SMBv1 is disabled",
       "severity": "critical",
-      "description": "Evaluates `windows.registry.smbv1_disabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.smbv1_disabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "SMBv1 is exploited by wormable malware such as WannaCry.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.smbv1_disabled",
@@ -922,14 +953,17 @@
       "id": "org.win.uac.admin_approval",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'User Account Control: Run all administrators in Admin Approval Mode' is enabled",
+      "title": "Ensure 'UAC: Run all administrators in Admin Approval Mode' is enabled",
       "severity": "high",
-      "description": "Evaluates `windows.registry.uac.admin_approval_mode` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.uac.admin_approval_mode` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Admin sessions run unelevated until consent is given.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.uac.admin_approval_mode",
@@ -1012,14 +1046,17 @@
       "id": "org.win.uac.consent_admin",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'User Account Control: Behavior of the elevation prompt for administrators' is configured",
+      "title": "Ensure 'UAC: Behavior of the elevation prompt for administrators' prompts",
       "severity": "high",
-      "description": "Evaluates `windows.registry.uac.consent_prompt_admin` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.uac.consent_prompt_admin` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Silent elevation lets malware gain admin rights unnoticed.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.uac.consent_prompt_admin",
@@ -1051,7 +1088,7 @@
             },
             "windows.registry.uac.consent_prompt_admin": {
               "state": "PRESENT",
-              "value": 1
+              "value": 2
             }
           }
         },
@@ -1092,7 +1129,7 @@
             },
             "windows.registry.uac.consent_prompt_admin": {
               "state": "PRESENT",
-              "value": 1
+              "value": 2
             }
           }
         }
@@ -1102,14 +1139,17 @@
       "id": "org.win.uac.secure_desktop",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'User Account Control: Switch to the secure desktop when prompting for elevation' is enabled",
+      "title": "Ensure 'UAC: Switch to the secure desktop when prompting' is enabled",
       "severity": "medium",
-      "description": "Evaluates `windows.registry.uac.prompt_on_secure_desktop` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.uac.prompt_on_secure_desktop` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Prevents other processes from spoofing or clicking the prompt.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.uac.prompt_on_secure_desktop",
@@ -1192,14 +1232,17 @@
       "id": "org.win.rdp.remote_logon_rest",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'User Remote Logon Restriction' for Terminal Services is enforced",
+      "title": "Ensure remote logon restriction for Terminal Services is enforced",
       "severity": "high",
-      "description": "Evaluates `windows.registry.rdp.user_remote_logon_restriction` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.rdp.user_remote_logon_restriction` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Limits which accounts may log on remotely.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.rdp.user_remote_logon_restriction",
@@ -1282,14 +1325,17 @@
       "id": "org.win.rdp.prompt_pwd",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Always prompt for password upon connection' for Remote Desktop is enabled",
+      "title": "Ensure 'Always prompt for password upon connection' is enabled for RDP",
       "severity": "medium",
-      "description": "Evaluates `windows.registry.rdp.prompt_for_password` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.rdp.prompt_for_password` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Saved RDP credentials must not grant silent access.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.rdp.prompt_for_password",
@@ -1372,14 +1418,17 @@
       "id": "org.win.rdp.require_nla",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Require user authentication for remote connections by using Network Level Authentication' is enabled",
+      "title": "Ensure Network Level Authentication is required for RDP",
       "severity": "high",
-      "description": "Evaluates `windows.registry.rdp.require_nla` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.rdp.require_nla` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "NLA authenticates users before a full RDP session is created.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.rdp.require_nla",
@@ -1464,12 +1513,15 @@
       "origin": "organizational",
       "title": "Ensure 'Password protect the screen saver' is enabled",
       "severity": "medium",
-      "description": "Evaluates `windows.registry.screensaver.is_secure` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.screensaver.is_secure` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Unattended sessions must require a password to resume.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.screensaver.is_secure",
@@ -1552,14 +1604,17 @@
       "id": "org.win.scr.timeout",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Screen saver timeout' is set to 900 or fewer seconds",
+      "title": "Ensure 'Screen saver timeout' is 900 or fewer seconds",
       "severity": "medium",
-      "description": "Evaluates `windows.registry.screensaver.timeout_seconds` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.registry.screensaver.timeout_seconds` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Idle sessions lock within 15 minutes.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.registry.screensaver.timeout_seconds",
@@ -1642,14 +1697,17 @@
       "id": "org.win.fw.domain_state",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure Windows Defender Firewall: Domain Profile is turned On",
+      "title": "Ensure Windows Defender Firewall Domain profile is On",
       "severity": "high",
-      "description": "Evaluates `windows.firewall.domain.enabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.firewall.domain.enabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "The Domain profile must filter traffic.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.firewall.domain.enabled",
@@ -1729,34 +1787,37 @@
       ]
     },
     {
-      "id": "org.win.fw.domain_inbound",
+      "id": "org.win.fw.private_state",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure Windows Defender Firewall: Domain: Inbound connections are blocked by default",
+      "title": "Ensure Windows Defender Firewall Private profile is On",
       "severity": "high",
-      "description": "Evaluates `windows.firewall.domain.default_inbound_block` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.firewall.private.enabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "The Private profile must filter traffic.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
-        "windows.firewall.domain.default_inbound_block",
+        "windows.firewall.private.enabled",
         "platform.family"
       ],
       "assertion": {
         "op": "eq",
-        "fact": "windows.firewall.domain.default_inbound_block",
+        "fact": "windows.firewall.private.enabled",
         "value": true
       },
       "expected": {
-        "fact": "windows.firewall.domain.default_inbound_block",
+        "fact": "windows.firewall.private.enabled",
         "operator": "eq",
         "value": true
       },
       "evidence": [
-        "windows.firewall.domain.default_inbound_block",
+        "windows.firewall.private.enabled",
         "platform.family"
       ],
       "remediation_template": "manual.win.20",
@@ -1769,7 +1830,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.domain.default_inbound_block": {
+            "windows.firewall.private.enabled": {
               "state": "PRESENT",
               "value": true
             }
@@ -1783,7 +1844,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.domain.default_inbound_block": {
+            "windows.firewall.private.enabled": {
               "state": "PRESENT",
               "value": false
             }
@@ -1797,7 +1858,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.domain.default_inbound_block": {
+            "windows.firewall.private.enabled": {
               "state": "UNAVAILABLE"
             }
           }
@@ -1810,7 +1871,7 @@
               "state": "PRESENT",
               "value": "other_os"
             },
-            "windows.firewall.domain.default_inbound_block": {
+            "windows.firewall.private.enabled": {
               "state": "PRESENT",
               "value": true
             }
@@ -1819,34 +1880,37 @@
       ]
     },
     {
-      "id": "org.win.fw.private_state",
+      "id": "org.win.fw.public_state",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure Windows Defender Firewall: Private Profile is turned On",
-      "severity": "high",
-      "description": "Evaluates `windows.firewall.private.enabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "title": "Ensure Windows Defender Firewall Public profile is On",
+      "severity": "critical",
+      "description": "Evaluates `windows.firewall.public.enabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "The Public profile must filter traffic.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
-        "windows.firewall.private.enabled",
+        "windows.firewall.public.enabled",
         "platform.family"
       ],
       "assertion": {
         "op": "eq",
-        "fact": "windows.firewall.private.enabled",
+        "fact": "windows.firewall.public.enabled",
         "value": true
       },
       "expected": {
-        "fact": "windows.firewall.private.enabled",
+        "fact": "windows.firewall.public.enabled",
         "operator": "eq",
         "value": true
       },
       "evidence": [
-        "windows.firewall.private.enabled",
+        "windows.firewall.public.enabled",
         "platform.family"
       ],
       "remediation_template": "manual.win.21",
@@ -1859,7 +1923,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.private.enabled": {
+            "windows.firewall.public.enabled": {
               "state": "PRESENT",
               "value": true
             }
@@ -1873,7 +1937,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.private.enabled": {
+            "windows.firewall.public.enabled": {
               "state": "PRESENT",
               "value": false
             }
@@ -1887,7 +1951,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.private.enabled": {
+            "windows.firewall.public.enabled": {
               "state": "UNAVAILABLE"
             }
           }
@@ -1900,7 +1964,7 @@
               "state": "PRESENT",
               "value": "other_os"
             },
-            "windows.firewall.private.enabled": {
+            "windows.firewall.public.enabled": {
               "state": "PRESENT",
               "value": true
             }
@@ -1909,34 +1973,37 @@
       ]
     },
     {
-      "id": "org.win.fw.private_inbound",
+      "id": "org.win.fw.domain_inbound",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure Windows Defender Firewall: Private: Inbound connections are blocked by default",
+      "title": "Ensure Windows Defender Firewall Domain profile blocks inbound by default",
       "severity": "high",
-      "description": "Evaluates `windows.firewall.private.default_inbound_block` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.firewall.domain.default_inbound_block` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Unsolicited inbound connections must be denied unless explicitly allowed.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
-        "windows.firewall.private.default_inbound_block",
+        "windows.firewall.domain.default_inbound_block",
         "platform.family"
       ],
       "assertion": {
         "op": "eq",
-        "fact": "windows.firewall.private.default_inbound_block",
+        "fact": "windows.firewall.domain.default_inbound_block",
         "value": true
       },
       "expected": {
-        "fact": "windows.firewall.private.default_inbound_block",
+        "fact": "windows.firewall.domain.default_inbound_block",
         "operator": "eq",
         "value": true
       },
       "evidence": [
-        "windows.firewall.private.default_inbound_block",
+        "windows.firewall.domain.default_inbound_block",
         "platform.family"
       ],
       "remediation_template": "manual.win.22",
@@ -1949,7 +2016,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.private.default_inbound_block": {
+            "windows.firewall.domain.default_inbound_block": {
               "state": "PRESENT",
               "value": true
             }
@@ -1963,7 +2030,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.private.default_inbound_block": {
+            "windows.firewall.domain.default_inbound_block": {
               "state": "PRESENT",
               "value": false
             }
@@ -1977,7 +2044,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.private.default_inbound_block": {
+            "windows.firewall.domain.default_inbound_block": {
               "state": "UNAVAILABLE"
             }
           }
@@ -1990,7 +2057,7 @@
               "state": "PRESENT",
               "value": "other_os"
             },
-            "windows.firewall.private.default_inbound_block": {
+            "windows.firewall.domain.default_inbound_block": {
               "state": "PRESENT",
               "value": true
             }
@@ -1999,34 +2066,37 @@
       ]
     },
     {
-      "id": "org.win.fw.public_state",
+      "id": "org.win.fw.private_inbound",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure Windows Defender Firewall: Public Profile is turned On",
-      "severity": "critical",
-      "description": "Evaluates `windows.firewall.public.enabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "title": "Ensure Windows Defender Firewall Private profile blocks inbound by default",
+      "severity": "high",
+      "description": "Evaluates `windows.firewall.private.default_inbound_block` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Unsolicited inbound connections must be denied unless explicitly allowed.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
-        "windows.firewall.public.enabled",
+        "windows.firewall.private.default_inbound_block",
         "platform.family"
       ],
       "assertion": {
         "op": "eq",
-        "fact": "windows.firewall.public.enabled",
+        "fact": "windows.firewall.private.default_inbound_block",
         "value": true
       },
       "expected": {
-        "fact": "windows.firewall.public.enabled",
+        "fact": "windows.firewall.private.default_inbound_block",
         "operator": "eq",
         "value": true
       },
       "evidence": [
-        "windows.firewall.public.enabled",
+        "windows.firewall.private.default_inbound_block",
         "platform.family"
       ],
       "remediation_template": "manual.win.23",
@@ -2039,7 +2109,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.public.enabled": {
+            "windows.firewall.private.default_inbound_block": {
               "state": "PRESENT",
               "value": true
             }
@@ -2053,7 +2123,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.public.enabled": {
+            "windows.firewall.private.default_inbound_block": {
               "state": "PRESENT",
               "value": false
             }
@@ -2067,7 +2137,7 @@
               "state": "PRESENT",
               "value": "windows_server"
             },
-            "windows.firewall.public.enabled": {
+            "windows.firewall.private.default_inbound_block": {
               "state": "UNAVAILABLE"
             }
           }
@@ -2080,7 +2150,7 @@
               "state": "PRESENT",
               "value": "other_os"
             },
-            "windows.firewall.public.enabled": {
+            "windows.firewall.private.default_inbound_block": {
               "state": "PRESENT",
               "value": true
             }
@@ -2092,14 +2162,17 @@
       "id": "org.win.fw.public_inbound",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure Windows Defender Firewall: Public: Inbound connections are blocked by default",
+      "title": "Ensure Windows Defender Firewall Public profile blocks inbound by default",
       "severity": "critical",
-      "description": "Evaluates `windows.firewall.public.default_inbound_block` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.firewall.public.default_inbound_block` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Unsolicited inbound connections must be denied unless explicitly allowed.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.firewall.public.default_inbound_block",
@@ -2182,14 +2255,17 @@
       "id": "org.win.svc.telnet",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Telnet' service is disabled or not installed",
+      "title": "Ensure the Telnet server is disabled or not installed",
       "severity": "critical",
-      "description": "Evaluates `windows.services.telnet.disabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.services.telnet.disabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Telnet sends credentials in cleartext.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.services.telnet.disabled",
@@ -2272,14 +2348,17 @@
       "id": "org.win.svc.remotereg",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Remote Registry' service is disabled",
+      "title": "Ensure the Remote Registry service is disabled",
       "severity": "high",
-      "description": "Evaluates `windows.services.remote_registry.disabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.services.remote_registry.disabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Remote Registry exposes configuration to the network.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.services.remote_registry.disabled",
@@ -2362,14 +2441,17 @@
       "id": "org.win.svc.ssdp",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'SSDP Discovery' service is disabled",
+      "title": "Ensure the SSDP Discovery service is disabled",
       "severity": "medium",
-      "description": "Evaluates `windows.services.ssdp_discovery.disabled` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.services.ssdp_discovery.disabled` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "SSDP/UPnP is abused for discovery and amplification.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.services.ssdp_discovery.disabled",
@@ -2452,14 +2534,17 @@
       "id": "org.win.audit.logon",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Audit Logon' is configured to include Success and Failure",
+      "title": "Ensure 'Audit Logon' includes Success and Failure",
       "severity": "high",
-      "description": "Evaluates `windows.audit.logon_logoff.logon` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.audit.logon_logoff.logon` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Security-relevant events must be recorded for investigation.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.audit.logon_logoff.logon",
@@ -2542,14 +2627,17 @@
       "id": "org.win.audit.user_mgmt",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Audit User Account Management' is configured to include Success and Failure",
+      "title": "Ensure 'Audit User Account Management' includes Success and Failure",
       "severity": "high",
-      "description": "Evaluates `windows.audit.account_management.user_account_management` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.audit.account_management.user_account_management` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Security-relevant events must be recorded for investigation.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.audit.account_management.user_account_management",
@@ -2632,14 +2720,17 @@
       "id": "org.win.audit.priv_use",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Audit Sensitive Privilege Use' is configured to include Success and Failure",
+      "title": "Ensure 'Audit Sensitive Privilege Use' includes Success and Failure",
       "severity": "high",
-      "description": "Evaluates `windows.audit.privilege_use.sensitive_privilege_use` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.audit.privilege_use.sensitive_privilege_use` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Security-relevant events must be recorded for investigation.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.audit.privilege_use.sensitive_privilege_use",
@@ -2722,14 +2813,17 @@
       "id": "org.win.audit.pol_change",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Audit Policy Change' is configured to include Success and Failure",
+      "title": "Ensure 'Audit Audit Policy Change' includes Success and Failure",
       "severity": "high",
-      "description": "Evaluates `windows.audit.policy_change.audit_policy_change` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.audit.policy_change.audit_policy_change` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Security-relevant events must be recorded for investigation.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.audit.policy_change.audit_policy_change",
@@ -2812,14 +2906,17 @@
       "id": "org.win.audit.sys_state",
       "revision": 1,
       "origin": "organizational",
-      "title": "Ensure 'Audit Security State Change' is configured to include Success and Failure",
+      "title": "Ensure 'Audit Security State Change' includes Success and Failure",
       "severity": "medium",
-      "description": "Evaluates `windows.audit.system.security_state_change` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
+      "description": "Evaluates `windows.audit.system.security_state_change` on Windows Server 2019/2022 and Windows 11.",
+      "rationale": "Security-relevant events must be recorded for investigation.",
       "applicability": {
-        "op": "eq",
+        "op": "in",
         "fact": "platform.family",
-        "value": "windows_server"
+        "value": [
+          "windows_server",
+          "windows"
+        ]
       },
       "required_facts": [
         "windows.audit.system.security_state_change",
@@ -2893,726 +2990,6 @@
             "windows.audit.system.security_state_change": {
               "state": "PRESENT",
               "value": "Success and Failure"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_33",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #33 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.33",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_34",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #34 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.34",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_35",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #35 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.35",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_36",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #36 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.36",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_37",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #37 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.37",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_38",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #38 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.38",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_39",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #39 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.39",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "org.win.hardening.item_40",
-      "revision": 1,
-      "origin": "organizational",
-      "title": "Ensure Windows organizational hardening baseline control #40 is enforced",
-      "severity": "medium",
-      "description": "Evaluates `windows.security_policy.password.min_length` on authorized Windows Server endpoints.",
-      "rationale": "Independently authored organizational hardening baseline.",
-      "applicability": {
-        "op": "eq",
-        "fact": "platform.family",
-        "value": "windows_server"
-      },
-      "required_facts": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "assertion": {
-        "op": "gte",
-        "fact": "windows.security_policy.password.min_length",
-        "value": 14
-      },
-      "expected": {
-        "fact": "windows.security_policy.password.min_length",
-        "operator": "gte",
-        "value": 14
-      },
-      "evidence": [
-        "windows.security_policy.password.min_length",
-        "platform.family"
-      ],
-      "remediation_template": "manual.win.40",
-      "tests": [
-        {
-          "id": "conforming",
-          "expect": "PASS",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
-            }
-          }
-        },
-        {
-          "id": "deviation",
-          "expect": "FAIL",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 7
-            }
-          }
-        },
-        {
-          "id": "unavailable",
-          "expect": "UNKNOWN",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "windows_server"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "UNAVAILABLE"
-            }
-          }
-        },
-        {
-          "id": "other-family",
-          "expect": "NOT_APPLICABLE",
-          "facts": {
-            "platform.family": {
-              "state": "PRESENT",
-              "value": "other_os"
-            },
-            "windows.security_policy.password.min_length": {
-              "state": "PRESENT",
-              "value": 14
             }
           }
         }

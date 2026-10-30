@@ -204,7 +204,8 @@ def _vty_blocks(text: str) -> list[tuple[str, list[str]]]:
     current: tuple[str, list[str]] | None = None
     for line in _bounded_lines(text):
         stripped = line.strip()
-        match = re.match(r"^line\s+(\S+(?:\s+\d+)?)$", stripped, flags=re.IGNORECASE)
+        # `line vty 0 4`, `line con 0`, `line vty 5 15`
+        match = re.match(r"^line\s+(\S+(?:\s+\d+){0,2})$", stripped, flags=re.IGNORECASE)
         if match:
             if current is not None:
                 blocks.append(current)
@@ -218,6 +219,135 @@ def _vty_blocks(text: str) -> list[tuple[str, list[str]]]:
     if current is not None:
         blocks.append(current)
     return blocks
+
+
+def _first_int(lowered: list[str], prefix: str, *, default: int) -> int:
+    for line in lowered:
+        if line.startswith(prefix):
+            value = line[len(prefix):].split()[0] if line[len(prefix):].split() else ""
+            if value.isdigit():
+                return int(value)
+    return default
+
+
+def _interface_blocks(lowered: list[str]) -> dict[str, list[str]]:
+    """Map a compact interface name (e.g. `vlan1`) to its configuration lines."""
+    blocks: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in lowered:
+        if line.startswith("interface "):
+            current = line.split(None, 1)[1].replace(" ", "")
+            blocks[current] = []
+        elif current is not None:
+            if line == "!" or not line:
+                current = None
+            else:
+                blocks[current].append(line)
+    return blocks
+
+
+SENSITIVE_PORTS = {"22", "23", "445", "3389", "ssh", "telnet"}
+
+
+def _acl_address(tokens: list[str]) -> tuple[str, list[str]]:
+    """Consume one ACL address spec; return (normalized, remaining tokens)."""
+    if not tokens:
+        return "any", tokens
+    head = tokens[0]
+    if head == "any":
+        return "any", tokens[1:]
+    if head == "host" and len(tokens) >= 2:
+        return f"{tokens[1]}/32", tokens[2:]
+    if len(tokens) >= 2 and re.match(r"^\d+\.\d+\.\d+\.\d+$", tokens[1]):
+        if head == "0.0.0.0" and tokens[1] == "255.255.255.255":  # noqa: S104 - ACL "any" wildcard
+            return "any", tokens[2:]
+        return f"{head}/{tokens[1]}", tokens[2:]
+    return head, tokens[1:]
+
+
+def _acl_entry(tokens: list[str]) -> dict[str, str] | None:
+    """Parse `permit|deny proto src [eq p] dst [eq p]` into a normalized entry."""
+    if len(tokens) < 2 or tokens[0] not in {"permit", "deny"}:
+        return None
+    action, proto, rest = tokens[0], tokens[1], tokens[2:]
+    if proto in {"any", "host"} or re.match(r"^\d+\.\d+\.\d+\.\d+$", proto):
+        # Standard ACL: permit <src>
+        src, _ = _acl_address([proto, *rest])
+        return {"action": action, "proto": "ip", "src": src, "dst": "any", "port": "any"}
+    src, rest = _acl_address(rest)
+    if rest[:1] == ["eq"] and len(rest) >= 2:
+        rest = rest[2:]
+    dst, rest = _acl_address(rest)
+    port = rest[1] if rest[:1] == ["eq"] and len(rest) >= 2 else "any"
+    return {"action": action, "proto": proto, "src": src, "dst": dst, "port": port}
+
+
+def _covers(a: dict[str, str], b: dict[str, str]) -> bool:
+    """True when ACL entry `a` matches every packet entry `b` matches."""
+    return (
+        (a["proto"] == "ip" or a["proto"] == b["proto"])
+        and (a["src"] == "any" or a["src"] == b["src"])
+        and (a["dst"] == "any" or a["dst"] == b["dst"])
+        and (a["port"] == "any" or a["port"] == b["port"])
+    )
+
+
+def analyze_cisco_acls(lowered: list[str]) -> dict[str, int]:
+    acls: dict[str, list[dict[str, str]]] = {}
+    current: str | None = None
+    for line in lowered:
+        named = re.match(r"^ip access-list (?:extended|standard) (\S+)$", line)
+        if named:
+            name = named.group(1)
+            acls.setdefault(name, [])
+            current = name
+            continue
+        numbered = re.match(r"^access-list (\d+) (.*)$", line)
+        if numbered:
+            entry = _acl_entry(numbered.group(2).split())
+            if entry:
+                acls.setdefault(numbered.group(1), []).append(entry)
+            current = None
+            continue
+        if current is not None:
+            tokens = line.split()
+            if tokens and tokens[0].isdigit():
+                tokens = tokens[1:]  # sequence number
+            entry = _acl_entry(tokens)
+            if entry:
+                acls[current].append(entry)
+            elif not tokens or tokens[0] not in {"remark"}:
+                current = None
+    permit_any_any = sensitive = shadowed = 0
+    for entries in acls.values():
+        for index, entry in enumerate(entries):
+            if entry["action"] == "permit" and entry["proto"] == "ip" and entry["src"] == "any" and entry["dst"] == "any":
+                permit_any_any += 1
+            if entry["action"] == "permit" and entry["src"] == "any" and entry["port"] in SENSITIVE_PORTS:
+                sensitive += 1
+            if any(_covers(earlier, entry) for earlier in entries[:index]):
+                shadowed += 1
+    return {"permit_any_any": permit_any_any, "sensitive_exposure": sensitive, "shadowed": shadowed}
+
+
+def parse_cisco_interfaces_status(text: str) -> list[dict[str, Any]]:
+    """`show interfaces status`: count ports that are not connected yet not shut down."""
+    unused = 0
+    rows = 0
+    for line in _bounded_lines(text):
+        lowered = line.strip().lower()
+        if not lowered or lowered.startswith("port "):
+            continue
+        rows += 1
+        if re.search(r"\bnotconnect\b", lowered):
+            unused += 1
+    return [
+        fact(
+            "switch.interfaces.unused_enabled_count",
+            unused,
+            FactState.PRESENT if rows else FactState.UNAVAILABLE,
+        )
+    ]
 
 
 def parse_running_config(text: str) -> list[dict[str, Any]]:
@@ -282,7 +412,51 @@ def parse_running_config(text: str) -> list[dict[str, Any]]:
                 }
             )
 
+    # Management-plane hardening. IOS XE defaults apply when a command is absent:
+    # exec-timeout 10 min, ip ssh time-out 120 s, ip ssh authentication-retries 3.
+    vty_without_explicit_transport = any(not line["transports"] for line in vty_lines)
+    telnet_permitted = vty_without_explicit_transport or any(
+        "telnet" in line["transports"] or "all" in line["transports"] for line in vty_lines
+    )
+    vty_timeouts = [line["exec_timeout_seconds"] or 600 for line in vty_lines]
+    vty_access_class = bool(vty_lines) and all(
+        any(entry.lower().startswith("access-class ") for entry in block)
+        for label, block in _vty_blocks(text)
+        if label.startswith("vty")
+    )
+    ssh_timeout = _first_int(lowered, "ip ssh time-out ", default=120)
+    ssh_retries = _first_int(lowered, "ip ssh authentication-retries ", default=3)
+    snmp_communities = sum(1 for line in lowered if line.startswith("snmp-server community "))
+    snmp_v3_priv = any(re.match(r"^snmp-server group \S+ v3 priv\b", line) for line in lowered)
+    interfaces = _interface_blocks(lowered)
+    vlan1 = interfaces.get("vlan1", [])
+    vlan1_mgmt = (
+        any(e.startswith("ip address ") for e in vlan1)
+        and "shutdown" not in vlan1
+        and "no ip address" not in vlan1
+    )
+    acl = analyze_cisco_acls(lowered)
+
     facts: list[dict[str, Any]] = [
+        fact("management.vty.telnet_permitted", telnet_permitted, FactState.PRESENT if vty_lines else FactState.UNAVAILABLE),
+        fact("management.vty.max_exec_timeout_seconds", max(vty_timeouts) if vty_timeouts else None, FactState.PRESENT if vty_timeouts else FactState.UNAVAILABLE),
+        fact("management.vty.access_class_applied", vty_access_class, FactState.PRESENT if vty_lines else FactState.UNAVAILABLE),
+        fact("management.ssh.timeout_seconds", ssh_timeout, FactState.PRESENT),
+        fact("management.ssh.authentication_retries", ssh_retries, FactState.PRESENT),
+        fact("management.aaa.new_model", config_has("aaa new-model"), FactState.PRESENT),
+        fact("management.enable_secret_configured", config_has("enable secret"), FactState.PRESENT),
+        fact("snmp.v1v2c_community_count", snmp_communities, FactState.PRESENT),
+        fact("snmp.v3_priv_configured", snmp_v3_priv, FactState.PRESENT),
+        fact("logging.syslog.host_count", len(syslog_hosts), FactState.PRESENT),
+        fact("logging.timestamps_enabled", any(line.startswith("service timestamps log datetime") for line in lowered), FactState.PRESENT),
+        fact("time.ntp.server_count", len(ntp_servers), FactState.PRESENT),
+        fact("time.ntp.authentication_enabled", config_has("ntp authenticate"), FactState.PRESENT),
+        fact("acl.permit_any_any_count", acl["permit_any_any"], FactState.PRESENT),
+        fact("acl.sensitive_port_exposure_count", acl["sensitive_exposure"], FactState.PRESENT),
+        fact("acl.shadowed_entry_count", acl["shadowed"], FactState.PRESENT),
+        fact("switch.dhcp_snooping.enabled", config_has("ip dhcp snooping") and any(line.startswith("ip dhcp snooping vlan ") for line in lowered), FactState.PRESENT),
+        fact("switch.arp_inspection.enabled", any(line.startswith("ip arp inspection vlan ") for line in lowered), FactState.PRESENT),
+        fact("switch.vlan1.management_ip_active", vlan1_mgmt, FactState.PRESENT),
         fact("management.http_server.enabled", http, FactState.PRESENT),
         fact("management.https_server.enabled", https, FactState.PRESENT),
         fact("management.ssh.version_2_only", ssh_version_2, FactState.PRESENT),
@@ -409,15 +583,19 @@ def parse_windows_registry_json(text: str) -> list[dict[str, Any]]:
             fact("windows.registry.screensaver.timeout_seconds", None, FactState.UNAVAILABLE),
         ]
 
-    blank_pwd = data.get("LimitBlankPasswordUse")
+    # Absent values take Windows' documented defaults where those are well defined.
+    def default(name: str, value: Any) -> Any:
+        return data.get(name) if data.get(name) is not None else value
+
+    blank_pwd = default("LimitBlankPasswordUse", 1)
     smb1 = data.get("SMB1")
-    uac_admin = data.get("EnableAdminApprovalMode")
-    uac_consent = data.get("ConsentPromptBehaviorAdmin")
-    uac_desktop = data.get("PromptOnSecureDesktop")
+    uac_admin = default("EnableAdminApprovalMode", 1)
+    uac_consent = default("ConsentPromptBehaviorAdmin", 5)
+    uac_desktop = default("PromptOnSecureDesktop", 1)
     rdp_logon = data.get("UserRemoteLogonRestriction")
-    rdp_prompt = data.get("fPromptForPassword")
-    rdp_nla = data.get("UserAuthentication")
-    ss_secure = data.get("ScreenSaverIsSecure")
+    rdp_prompt = default("fPromptForPassword", 0)  # unset policy = not enforced
+    rdp_nla = default("UserAuthentication", 1)
+    ss_secure = default("ScreenSaverIsSecure", 0)  # unset = no password on resume
     ss_timeout = data.get("ScreenSaveTimeOut")
 
     return [
@@ -494,6 +672,19 @@ def parse_windows_auditpol(text: str) -> list[dict[str, Any]]:
                 return v.title()
         return "No Auditing"
 
+    if not values:
+        # Empty output (e.g. auditpol exit 1314: not elevated) is missing evidence,
+        # never "No Auditing".
+        return [
+            fact(key, None, FactState.UNAVAILABLE)
+            for key in (
+                "windows.audit.logon_logoff.logon",
+                "windows.audit.account_management.user_account_management",
+                "windows.audit.privilege_use.sensitive_privilege_use",
+                "windows.audit.policy_change.audit_policy_change",
+                "windows.audit.system.security_state_change",
+            )
+        ]
     return [
         fact("windows.audit.logon_logoff.logon", get_audit("logon"), FactState.PRESENT),
         fact("windows.audit.account_management.user_account_management", get_audit("user account management"), FactState.PRESENT),
@@ -517,8 +708,13 @@ def parse_windows_firewall(text: str) -> list[dict[str, Any]]:
             profiles = [profiles]
         for p in profiles:
             name = str(p.get("Name", "")).lower()
-            enabled = bool(p.get("Enabled", False) or str(p.get("Enabled", "")).lower() in ("true", "1"))
-            inbound_block = str(p.get("DefaultInboundAction", "")).lower() in ("block", "notallowed")
+            # ConvertTo-Json emits enums as numbers. GpoBoolean: 0 False, 1 True,
+            # 2 NotConfigured (profile on by default). Action: 0 NotConfigured (the
+            # built-in default blocks inbound), 2 Allow, 4 Block.
+            raw_enabled = str(p.get("Enabled", "")).lower()
+            enabled = raw_enabled in ("true", "1", "2", "notconfigured")
+            raw_inbound = str(p.get("DefaultInboundAction", "")).lower()
+            inbound_block = raw_inbound in ("block", "notallowed", "4", "0", "notconfigured")
             if "domain" in name:
                 domain_on = enabled
                 domain_block_in = inbound_block
@@ -567,8 +763,13 @@ def parse_windows_services(text: str) -> list[dict[str, Any]]:
                 remote_reg_disabled = not is_active
             elif "ssdpsrv" in name:
                 ssdp_disabled = not is_active
-    except Exception:  # noqa: S110
-        pass
+    except Exception:
+        # Unparseable output must never read as "disabled" (a false pass).
+        return [
+            fact("windows.services.telnet.disabled", None, FactState.UNAVAILABLE),
+            fact("windows.services.remote_registry.disabled", None, FactState.UNAVAILABLE),
+            fact("windows.services.ssdp_discovery.disabled", None, FactState.UNAVAILABLE),
+        ]
 
     return [
         fact("windows.services.telnet.disabled", telnet_disabled, FactState.PRESENT),
@@ -608,8 +809,13 @@ def parse_fortios_status(text: str) -> list[dict[str, Any]]:
     ]
 
 
+def _forti_lines(text: str) -> list[str]:
+    """Lower-case FortiOS lines with `key      : value` padding collapsed to `key: value`."""
+    return [re.sub(r"\s*:\s+", ": ", re.sub(r"\s+", " ", line.strip().lower())) for line in _bounded_lines(text)]
+
+
 def parse_fortios_system_global(text: str) -> list[dict[str, Any]]:
-    lines = [line.strip().lower() for line in _bounded_lines(text)]
+    lines = _forti_lines(text)
 
     def has_setting(keyword: str, val: str) -> bool:
         return any(line == f"set {keyword} {val}" or line == f"{keyword}: {val}" for line in lines)
@@ -618,17 +824,28 @@ def parse_fortios_system_global(text: str) -> list[dict[str, Any]]:
     banner = has_setting("pre-login-banner", "enable")
     strong_crypto = has_setting("strong-crypto", "enable")
 
+    # FortiOS defaults when a setting is not shown.
     sport = 443
     ssh_port = 22
-    idle_timeout = 10
+    idle_timeout = 5
+    lockout_threshold = 3
+    lockout_duration = 60
 
     for line in lines:
-        if line.startswith("set admin-sport "):
-            sport = int(line.split()[2])
-        elif line.startswith("set admin-ssh-port "):
-            ssh_port = int(line.split()[2])
-        elif line.startswith("set admintimeout "):
-            idle_timeout = int(line.split()[2])
+        match = re.match(r"^(?:set\s+)?([a-z-]+)[:\s]+(\d+)$", line)
+        if not match:
+            continue
+        key, value = match.group(1), int(match.group(2))
+        if key == "admin-sport":
+            sport = value
+        elif key == "admin-ssh-port":
+            ssh_port = value
+        elif key == "admintimeout":
+            idle_timeout = value
+        elif key == "admin-lockout-threshold":
+            lockout_threshold = value
+        elif key == "admin-lockout-duration":
+            lockout_duration = value
 
     return [
         fact("fortigate.system.admin_https_redirect", https_redirect, FactState.PRESENT),
@@ -637,55 +854,164 @@ def parse_fortios_system_global(text: str) -> list[dict[str, Any]]:
         fact("fortigate.system.admin_sport", sport, FactState.PRESENT),
         fact("fortigate.system.admin_ssh_port", ssh_port, FactState.PRESENT),
         fact("fortigate.system.admin_idle_timeout", idle_timeout, FactState.PRESENT),
+        fact("fortigate.system.admin_lockout_threshold", lockout_threshold, FactState.PRESENT),
+        fact("fortigate.system.admin_lockout_duration", lockout_duration, FactState.PRESENT),
     ]
 
 
+FORTI_SENSITIVE_SERVICES = {"ssh", "rdp", "smb", "samba", "telnet"}
+
+
+def _forti_values(line: str) -> list[str]:
+    """`set srcaddr "a" "b"` -> ["a", "b"] (lower-cased, quotes removed)."""
+    parts = re.findall(r'"([^"]*)"|(\S+)', line)
+    return [(quoted or bare).lower() for quoted, bare in parts][2:]
+
+
+def parse_fortios_policies(text: str) -> list[dict[str, Any]]:
+    """Parse `show firewall policy` into ordered policy dicts (FortiOS defaults applied)."""
+    policies: list[dict[str, Any]] = []
+    current: dict[str, Any] | None = None
+    for raw in _bounded_lines(text):
+        line = raw.strip()
+        lowered = line.lower()
+        edit = re.match(r"^edit\s+(\d+)$", lowered)
+        if edit:
+            current = {
+                "id": int(edit.group(1)), "srcintf": [], "dstintf": [], "srcaddr": [], "dstaddr": [],
+                "service": [], "action": "deny", "logtraffic": "utm", "status": "enable",
+            }
+            continue
+        if current is None:
+            continue
+        if lowered in {"next", "end"}:
+            policies.append(current)
+            current = None
+            continue
+        if lowered.startswith("set "):
+            key = lowered.split()[1] if len(lowered.split()) > 1 else ""
+            values = _forti_values(line)
+            if key in {"srcintf", "dstintf", "srcaddr", "dstaddr", "service"}:
+                current[key] = values
+            elif key in {"action", "logtraffic", "status"} and values:
+                current[key] = values[0]
+    return policies
+
+
+def _is_all(values: list[str]) -> bool:
+    return "all" in values
+
+
+def _forti_covers(a: dict[str, Any], b: dict[str, Any]) -> bool:
+    def covers(field: str) -> bool:
+        return _is_all(a[field]) or "any" in a[field] or set(b[field]) <= set(a[field])
+
+    return all(covers(f) for f in ("srcintf", "dstintf", "srcaddr", "dstaddr", "service"))
+
+
 def parse_fortios_firewall_policy(text: str) -> list[dict[str, Any]]:
-    lines = [line.strip().lower() for line in _bounded_lines(text)]
-    any_any_count = 0
-    log_all_count = 0
-    policy_count = 0
+    policies = [p for p in parse_fortios_policies(text) if p["status"] != "disable"]
+    accepts = [p for p in policies if p["action"] == "accept"]
 
-    in_policy = False
-    has_any_src = False
-    has_any_dst = False
-    has_any_srv = False
-    is_accept = False
-
-    for line in lines:
-        if line.startswith("edit ") and ("policy" in line or line.split()[1].isdigit()):
-            in_policy = True
-            policy_count += 1
-            has_any_src = False
-            has_any_dst = False
-            has_any_srv = False
-            is_accept = False
-        elif in_policy and (line == "next" or line == "end"):
-            if is_accept and has_any_src and has_any_dst and has_any_srv:
-                any_any_count += 1
-            in_policy = False
-        elif in_policy:
-            if "set srcaddr \"all\"" in line or "set srcaddr all" in line:
-                has_any_src = True
-            if "set dstaddr \"all\"" in line or "set dstaddr all" in line:
-                has_any_dst = True
-            if "set service \"all\"" in line or "set service \"all\"" in line:
-                has_any_srv = True
-            if "set action accept" in line:
-                is_accept = True
-            if "set logtraffic all" in line:
-                log_all_count += 1
-
+    any_any = sum(
+        1 for p in accepts if _is_all(p["srcaddr"]) and _is_all(p["dstaddr"]) and _is_all(p["service"])
+    )
+    sensitive = sum(
+        1 for p in accepts if _is_all(p["srcaddr"]) and FORTI_SENSITIVE_SERVICES & set(p["service"])
+    )
+    shadowed = sum(
+        1 for index, p in enumerate(policies) if any(_forti_covers(earlier, p) for earlier in policies[:index])
+    )
+    without_log = sum(1 for p in accepts if p["logtraffic"] != "all")
+    last = policies[-1] if policies else None
+    explicit_default_deny = bool(
+        last
+        and last["action"] == "deny"
+        and _is_all(last["srcaddr"])
+        and _is_all(last["dstaddr"])
+        and _is_all(last["service"])
+    )
+    state = FactState.PRESENT if policies or "config firewall policy" in text.lower() else FactState.UNAVAILABLE
     return [
-        fact("fortigate.firewall.any_any_allow_count", any_any_count, FactState.PRESENT),
-        fact("fortigate.firewall.logtraffic_all_count", log_all_count, FactState.PRESENT),
-        fact("fortigate.firewall.total_policies", policy_count, FactState.PRESENT),
-        fact("fortigate.firewall.has_default_deny", True, FactState.PRESENT),
+        fact("fortigate.firewall.any_any_allow_count", any_any, state),
+        fact("fortigate.firewall.sensitive_service_exposure_count", sensitive, state),
+        fact("fortigate.firewall.shadowed_policy_count", shadowed, state),
+        fact("fortigate.firewall.accept_without_logging_count", without_log, state),
+        fact("fortigate.firewall.total_policies", len(policies), state),
+        fact("fortigate.firewall.has_default_deny", explicit_default_deny, state),
+    ]
+
+
+def parse_fortios_interfaces(text: str) -> list[dict[str, Any]]:
+    """Count interfaces that allow cleartext admin protocols (HTTP/Telnet)."""
+    insecure = 0
+    seen = 0
+    for raw in _bounded_lines(text):
+        lowered = raw.strip().lower()
+        match = re.search(r"(?:set\s+)?allowaccess[:\s]+(.*)", lowered)
+        if not match:
+            continue
+        seen += 1
+        tokens = []
+        for token in match.group(1).split():
+            if ":" in token:
+                break
+            tokens.append(token.strip('"'))
+        if {"http", "telnet"} & set(tokens):
+            insecure += 1
+    return [
+        fact(
+            "fortigate.interface.cleartext_admin_access_count",
+            insecure,
+            FactState.PRESENT if seen else FactState.UNAVAILABLE,
+        )
+    ]
+
+
+def parse_fortios_ntp(text: str) -> list[dict[str, Any]]:
+    lowered = _forti_lines(text)
+    has_config = any(line.startswith("config system ntp") or line.startswith("ntpsync") for line in lowered)
+    sync = any(line in {"set ntpsync enable", "ntpsync: enable"} for line in lowered)
+    return [fact("fortigate.ntp.sync_enabled", sync, FactState.PRESENT if has_config else FactState.UNAVAILABLE)]
+
+
+def parse_fortios_snmp_community(text: str) -> list[dict[str, Any]]:
+    entries = 0
+    disabled = 0
+    in_entry = False
+    for raw in _bounded_lines(text):
+        line = raw.strip().lower()
+        if re.match(r"^edit\s+\d+$", line):
+            entries += 1
+            in_entry = True
+        elif in_entry and line == "set status disable":
+            disabled += 1
+        elif line in {"next", "end"}:
+            in_entry = False
+    return [fact("fortigate.snmp.v1v2c_community_count", entries - disabled, FactState.PRESENT)]
+
+
+def parse_fortios_snmp_user(text: str) -> list[dict[str, Any]]:
+    lowered = _forti_lines(text)
+    return [fact("fortigate.snmp.v3_priv_configured", "set security-level auth-priv" in lowered, FactState.PRESENT)]
+
+
+def parse_fortios_password_policy(text: str) -> list[dict[str, Any]]:
+    lowered = _forti_lines(text)
+    enabled = "set status enable" in lowered or "status: enable" in lowered
+    min_length = 8  # FortiOS default when the policy is enabled without an explicit length
+    for line in lowered:
+        match = re.match(r"^(?:set minimum-length|minimum-length:)\s*(\d+)", line)
+        if match:
+            min_length = int(match.group(1))
+    return [
+        fact("fortigate.password_policy.enabled", enabled, FactState.PRESENT),
+        fact("fortigate.password_policy.min_length", min_length if enabled else 0, FactState.PRESENT),
     ]
 
 
 def parse_fortios_syslog(text: str) -> list[dict[str, Any]]:
-    lines = [line.strip().lower() for line in _bounded_lines(text)]
+    lines = _forti_lines(text)
     status = any("set status enable" in line or "status: enable" in line for line in lines)
     server = None
     for line in lines:

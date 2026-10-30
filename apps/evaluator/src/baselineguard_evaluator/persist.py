@@ -164,10 +164,14 @@ def link_result_evidence(
         trace_pointers: list[dict[str, Any]] = [
             item for item in raw_pointers if isinstance(item, dict)
         ]
+        seen: set[UUID] = set()
         for pointer in trace_pointers:
             ref_id = by_source_sha.get(str((pointer or {}).get("artifact_sha256", "")))
-            if ref_id is None:
+            # Several evidence facts of one control often come from the same reader
+            # output; link each evidence reference once per result.
+            if ref_id is None or ref_id in seen:
                 continue
+            seen.add(ref_id)
             db.add(
                 ResultEvidence(
                     org_id=org_id,

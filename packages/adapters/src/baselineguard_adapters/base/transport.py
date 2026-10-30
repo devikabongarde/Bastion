@@ -44,6 +44,7 @@ def resolve_authorized_endpoint(
     allowed_dns_suffixes: tuple[str, ...],
     allowed_ports: tuple[int, ...],
     resolver: Callable[..., Sequence[AddressInfo]] = socket.getaddrinfo,
+    allow_loopback: bool = False,
 ) -> ResolvedEndpoint:
     """Resolve once, authorize every answer, and return a pinned address for the socket."""
     if port not in allowed_ports:
@@ -72,7 +73,10 @@ def resolve_authorized_endpoint(
     networks = [ipaddress.ip_network(cidr, strict=False) for cidr in allowed_cidrs]
     if not addresses:
         raise TargetScopeError("TARGET_NAME_RESOLUTION_FAILED")
-    if any(_is_forbidden_ip(address) for address in addresses):
+    if any(
+        _is_forbidden_ip(address) and not (allow_loopback and address.is_loopback)
+        for address in addresses
+    ):
         raise TargetScopeError("TARGET_ADDRESS_PROHIBITED")
     if any(
         not any(address.version == network.version and address in network for network in networks)

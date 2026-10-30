@@ -36,14 +36,11 @@ SECRET_LINE = re.compile(
     r")"
 )
 
+# Readers common to every IOS XE device; role-specific readers are appended in collect().
 IOSXE_READERS: dict[str, str] = {
     "iosxe.identity.show_version": "show version",
     "iosxe.config.running": "show running-config",
     "iosxe.time.clock": "show clock",
-    "iosxe.switch.interfaces_switchport": "show interfaces switchport",
-    "iosxe.switch.spanning_tree": "show spanning-tree summary",
-    "iosxe.switch.port_security": "show port-security",
-    "iosxe.switch.vlans_brief": "show vlan brief",
 }
 IOSXE_ROUTER_READERS = ("iosxe.interfaces.ip_brief", "show ip interface brief")
 IOSXE_SWITCH_READERS = (
@@ -51,6 +48,7 @@ IOSXE_SWITCH_READERS = (
     ("iosxe.switch.spanning_tree", "show spanning-tree summary"),
     ("iosxe.switch.port_security", "show port-security"),
     ("iosxe.switch.vlans_brief", "show vlan brief"),
+    ("iosxe.switch.interfaces_status", "show interfaces status"),
 )
 
 
@@ -59,6 +57,27 @@ class CiscoIOSXECollection:
     role: str
     reader_outputs: tuple[ReadOutput, ...]
     session_side_effects: tuple[str, ...] = ("terminal length 0", "terminal width 511")
+
+
+SECRET_KEYWORDS = {"password", "secret", "community", "user", "authentication-key", "privacy-key",
+                   "key-string", "pre-shared-key"}
+
+
+def _redact_secret_line(line: str) -> str:
+    """Keep the command prefix (so presence can be audited) and drop the secret itself.
+
+    `enable secret 9 $9$abc` -> `enable secret <redacted>`;
+    `snmp-server community s3cret RO 10` -> `snmp-server community <redacted> RO 10`.
+    """
+    indent = line[: len(line) - len(line.lstrip())]
+    tokens = line.split()
+    for index, token in enumerate(tokens):
+        if token.lower() in SECRET_KEYWORDS:
+            kept = tokens[: index + 1]
+            if token.lower() == "community":
+                return indent + " ".join([*kept, "<redacted>", *tokens[index + 2 :]])
+            return indent + " ".join([*kept, "<redacted>"])
+    return indent + "<redacted secret-bearing configuration line>"
 
 
 def redact_cisco_config(value: str) -> str:
@@ -76,7 +95,7 @@ def redact_cisco_config(value: str) -> str:
                 in_certificate = False
             continue
         if SECRET_LINE.search(line):
-            redacted.append("<redacted secret-bearing configuration line>")
+            redacted.append(_redact_secret_line(line))
         else:
             redacted.append(line)
     return "\n".join(redacted)

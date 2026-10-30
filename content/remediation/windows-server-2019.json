@@ -1,486 +1,301 @@
 {
   "schema_version": "1.0",
-  "note": "Original project-authored remediation guidance.",
+  "note": "Original project-authored remediation guidance. Review before use; BaselineGuard never executes these commands.",
   "templates": {
     "manual.win.01": {
-      "summary": "Configure password policy in Local Security Policy or GPO.",
+      "summary": "Require passwords of at least 14 characters.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Minimum password length' is set to 14 or more characters.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /minpwlen:14"
       ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"Minimum password length\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.02": {
-      "summary": "Enable password complexity requirements.",
+      "summary": "Enable password complexity.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Password must meet complexity requirements' is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "secedit /export /cfg $env:TEMP\\secpol.cfg",
+        "(Get-Content $env:TEMP\\secpol.cfg) -replace '^PasswordComplexity\\s*=.*', 'PasswordComplexity = 1' | Set-Content $env:TEMP\\secpol.cfg",
+        "secedit /configure /db $env:windir\\security\\local.sdb /cfg $env:TEMP\\secpol.cfg /areas SECURITYPOLICY"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "secedit /export /cfg $env:TEMP\\v.cfg; Select-String PasswordComplexity $env:TEMP\\v.cfg",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.03": {
-      "summary": "Configure maximum password age.",
+      "summary": "Set maximum password age to 60 days.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Maximum password age' is 60 or fewer days (and not 0).",
-        "Set the value to: 60.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /maxpwage:60"
       ],
-      "verify": "Verify setting reflects 60.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"Maximum password age\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.04": {
-      "summary": "Prevent immediate password reuse cycling.",
+      "summary": "Set minimum password age to 1 day.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Minimum password age' is at least 1 day.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /minpwage:1"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"Minimum password age\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.05": {
-      "summary": "Maintain password history.",
+      "summary": "Remember the last 24 passwords.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Enforce password history' is set to 24 or more passwords.",
-        "Set the value to: 24.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /uniquepw:24"
       ],
-      "verify": "Verify setting reflects 24.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"history\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.06": {
-      "summary": "Lock account after consecutive failed attempts.",
+      "summary": "Lock accounts after 5 failed logons.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Account lockout threshold' is set to 5 or fewer invalid logon attempts.",
-        "Set the value to: 5.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /lockoutthreshold:5"
       ],
-      "verify": "Verify setting reflects 5.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"Lockout threshold\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.07": {
-      "summary": "Set account lockout duration window.",
+      "summary": "Set lockout duration to 15 minutes.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Account lockout duration' is set to 15 or more minutes.",
-        "Set the value to: 15.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /lockoutduration:15"
       ],
-      "verify": "Verify setting reflects 15.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"Lockout duration\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.08": {
-      "summary": "Configure lockout observation window.",
+      "summary": "Reset the lockout counter after 15 minutes.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Reset account lockout counter after' is set to 15 or more minutes.",
-        "Set the value to: 15.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "net accounts /lockoutwindow:15"
       ],
-      "verify": "Verify setting reflects 15.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "net accounts | findstr /i \"Lockout observation window\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.09": {
-      "summary": "Prevent network logon with blank passwords.",
+      "summary": "Restrict blank passwords to console logon.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Accounts: Limit local account use of blank passwords to console logon only' is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' -Name LimitBlankPasswordUse -Value 1 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Lsa' -Name LimitBlankPasswordUse",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.10": {
-      "summary": "Disable insecure legacy SMBv1 protocol.",
+      "summary": "Disable the SMBv1 protocol.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure SMBv1 client and server driver are disabled.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force",
+        "Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-SmbServerConfiguration | Select-Object EnableSMB1Protocol",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.11": {
       "summary": "Enable UAC Admin Approval Mode.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'User Account Control: Run all administrators in Admin Approval Mode' is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name EnableAdminApprovalMode -Value 1 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name EnableAdminApprovalMode",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.12": {
-      "summary": "Require prompt for consent or credentials on elevation.",
+      "summary": "Prompt for consent on the secure desktop.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'User Account Control: Behavior of the elevation prompt for administrators' is configured.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name ConsentPromptBehaviorAdmin -Value 2 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name ConsentPromptBehaviorAdmin",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.13": {
-      "summary": "Isolate elevation prompts from unprivileged processes.",
+      "summary": "Show elevation prompts on the secure desktop.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'User Account Control: Switch to the secure desktop when prompting for elevation' is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name PromptOnSecureDesktop -Value 1 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System' -Name PromptOnSecureDesktop",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.14": {
-      "summary": "Enforce remote desktop logon restrictions.",
+      "summary": "Enforce remote logon restrictions.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'User Remote Logon Restriction' for Terminal Services is enforced.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server' -Name UserRemoteLogonRestriction -Value 1 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server' -Name UserRemoteLogonRestriction",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.15": {
-      "summary": "Require explicit password prompt upon RDP connection.",
+      "summary": "Always prompt for a password on RDP connection.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Always prompt for password upon connection' for Remote Desktop is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "New-Item -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services' -Force | Out-Null",
+        "Set-ItemProperty -Path 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services' -Name fPromptForPassword -Value 1 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services' -Name fPromptForPassword",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.16": {
-      "summary": "Require NLA before establishing RDP sessions.",
+      "summary": "Require NLA for Remote Desktop.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Require user authentication for remote connections by using Network Level Authentication' is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' -Name UserAuthentication -Value 1 -Type DWord"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp' -Name UserAuthentication",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.17": {
-      "summary": "Require unlock password upon screen saver resumption.",
+      "summary": "Password-protect the screen saver.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Password protect the screen saver' is enabled.",
-        "Set the value to: 1.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop' -Name ScreenSaverIsSecure -Value \"1\" -Type String"
       ],
-      "verify": "Verify setting reflects 1.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKCU:\\Control Panel\\Desktop' -Name ScreenSaverIsSecure",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.18": {
-      "summary": "Lock inactive sessions within 15 minutes.",
+      "summary": "Lock idle sessions after 15 minutes.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Screen saver timeout' is set to 900 or fewer seconds.",
-        "Set the value to: 900.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-ItemProperty -Path 'HKCU:\\Control Panel\\Desktop' -Name ScreenSaveTimeOut -Value \"900\" -Type String"
       ],
-      "verify": "Verify setting reflects 900.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-ItemPropertyValue 'HKCU:\\Control Panel\\Desktop' -Name ScreenSaveTimeOut",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.19": {
-      "summary": "Enable Domain firewall profile.",
+      "summary": "Turn on the Domain firewall profile.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows Defender Firewall: Domain Profile is turned On.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-NetFirewallProfile -Profile Domain -Enabled True"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-NetFirewallProfile -Profile Domain | Select-Object Name, Enabled",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.20": {
-      "summary": "Block unsolicited inbound traffic on domain networks.",
+      "summary": "Turn on the Private firewall profile.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows Defender Firewall: Domain: Inbound connections are blocked by default.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-NetFirewallProfile -Profile Private -Enabled True"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-NetFirewallProfile -Profile Private | Select-Object Name, Enabled",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.21": {
-      "summary": "Enable Private firewall profile.",
+      "summary": "Turn on the Public firewall profile.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows Defender Firewall: Private Profile is turned On.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-NetFirewallProfile -Profile Public -Enabled True"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-NetFirewallProfile -Profile Public | Select-Object Name, Enabled",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.22": {
-      "summary": "Block unsolicited inbound traffic on private networks.",
+      "summary": "Block inbound connections by default on the Domain profile.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows Defender Firewall: Private: Inbound connections are blocked by default.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-NetFirewallProfile -Profile Domain -DefaultInboundAction Block"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-NetFirewallProfile -Profile Domain | Select-Object Name, DefaultInboundAction",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.23": {
-      "summary": "Enable Public firewall profile.",
+      "summary": "Block inbound connections by default on the Private profile.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows Defender Firewall: Public Profile is turned On.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-NetFirewallProfile -Profile Private -DefaultInboundAction Block"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-NetFirewallProfile -Profile Private | Select-Object Name, DefaultInboundAction",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.24": {
-      "summary": "Block unsolicited inbound traffic on public networks.",
+      "summary": "Block inbound connections by default on the Public profile.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows Defender Firewall: Public: Inbound connections are blocked by default.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Set-NetFirewallProfile -Profile Public -DefaultInboundAction Block"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-NetFirewallProfile -Profile Public | Select-Object Name, DefaultInboundAction",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.25": {
-      "summary": "Disable insecure cleartext Telnet service.",
+      "summary": "Remove the Telnet server.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Telnet' service is disabled or not installed.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Stop-Service TlntSvr -ErrorAction SilentlyContinue",
+        "Disable-WindowsOptionalFeature -Online -FeatureName TelnetServer -NoRestart"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-Service TlntSvr -ErrorAction SilentlyContinue",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.26": {
-      "summary": "Disable Remote Registry service unless required for enterprise auditing.",
+      "summary": "Disable Remote Registry.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Remote Registry' service is disabled.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Stop-Service RemoteRegistry -Force",
+        "Set-Service RemoteRegistry -StartupType Disabled"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-Service RemoteRegistry | Select-Object Status, StartType",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.27": {
-      "summary": "Disable SSDP Discovery service to prevent UPnP amplification.",
+      "summary": "Disable SSDP Discovery.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'SSDP Discovery' service is disabled.",
-        "Set the value to: True.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "Stop-Service SSDPSRV -Force",
+        "Set-Service SSDPSRV -StartupType Disabled"
       ],
-      "verify": "Verify setting reflects True.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "Get-Service SSDPSRV | Select-Object Status, StartType",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.28": {
-      "summary": "Record successful and failed logon activity.",
+      "summary": "Audit Logon success and failure.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Audit Logon' is configured to include Success and Failure.",
-        "Set the value to: Success and Failure.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "auditpol /set /subcategory:\"Logon\" /success:enable /failure:enable"
       ],
-      "verify": "Verify setting reflects Success and Failure.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "auditpol /get /subcategory:\"Logon\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.29": {
-      "summary": "Record account creation, modification, and deletion.",
+      "summary": "Audit User Account Management success and failure.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Audit User Account Management' is configured to include Success and Failure.",
-        "Set the value to: Success and Failure.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "auditpol /set /subcategory:\"User Account Management\" /success:enable /failure:enable"
       ],
-      "verify": "Verify setting reflects Success and Failure.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "auditpol /get /subcategory:\"User Account Management\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.30": {
-      "summary": "Record use of sensitive user privileges.",
+      "summary": "Audit Sensitive Privilege Use success and failure.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Audit Sensitive Privilege Use' is configured to include Success and Failure.",
-        "Set the value to: Success and Failure.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "auditpol /set /subcategory:\"Sensitive Privilege Use\" /success:enable /failure:enable"
       ],
-      "verify": "Verify setting reflects Success and Failure.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "auditpol /get /subcategory:\"Sensitive Privilege Use\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.31": {
-      "summary": "Record changes to audit policies and trust relationships.",
+      "summary": "Audit Audit Policy Change success and failure.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Audit Policy Change' is configured to include Success and Failure.",
-        "Set the value to: Success and Failure.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "auditpol /set /subcategory:\"Audit Policy Change\" /success:enable /failure:enable"
       ],
-      "verify": "Verify setting reflects Success and Failure.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "auditpol /get /subcategory:\"Audit Policy Change\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     },
     "manual.win.32": {
-      "summary": "Record system startup, shutdown, and audit log clearance.",
+      "summary": "Audit Security State Change success and failure.",
       "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure 'Audit Security State Change' is configured to include Success and Failure.",
-        "Set the value to: Success and Failure.",
-        "Run `gpupdate /force` and verify effective policy state."
+        "auditpol /set /subcategory:\"Security State Change\" /success:enable /failure:enable"
       ],
-      "verify": "Verify setting reflects Success and Failure.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.33": {
-      "summary": "Organizational baseline rule #33 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #33 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.34": {
-      "summary": "Organizational baseline rule #34 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #34 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.35": {
-      "summary": "Organizational baseline rule #35 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #35 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.36": {
-      "summary": "Organizational baseline rule #36 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #36 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.37": {
-      "summary": "Organizational baseline rule #37 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #37 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.38": {
-      "summary": "Organizational baseline rule #38 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #38 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.39": {
-      "summary": "Organizational baseline rule #39 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #39 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
-    },
-    "manual.win.40": {
-      "summary": "Organizational baseline rule #40 procedure.",
-      "steps": [
-        "Open Group Policy Management Console (gpmc.msc) or Local Security Policy (secpol.msc).",
-        "Navigate to the policy setting corresponding to: Ensure Windows organizational hardening baseline control #40 is enforced.",
-        "Set the value to: 14.",
-        "Run `gpupdate /force` and verify effective policy state."
-      ],
-      "verify": "Verify setting reflects 14.",
-      "impact": "Ensure compatibility with existing enterprise service accounts.",
-      "authority": "Domain Group Policy (GPO) or Local Security Policy."
+      "verify": "auditpol /get /subcategory:\"Security State Change\"",
+      "impact": "Apply during a maintenance window and confirm management access afterwards.",
+      "authority": "Domain Group Policy (GPO) if the setting is centrally managed; otherwise Local Security Policy."
     }
   }
 }

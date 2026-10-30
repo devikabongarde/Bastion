@@ -46,6 +46,16 @@ export interface Asset {
   owner_id: string | null;
   tags: Record<string, string>;
   archived_at: string | null;
+  /** Real collection readiness reported by the API (never inferred in the UI). */
+  collection_mode: "live_ssh" | "live_local" | "fixture" | "import";
+  host_key_fingerprint: string | null;
+  host_key_verified_at: string | null;
+  credential_bound: boolean;
+}
+
+export interface PolicySummary {
+  id: string; name: string; revision: number; state: string; published_at: string | null;
+  rule_packs: Array<{ id: string; pack_key: string; version: string }>;
 }
 
 export interface Scan {

@@ -14,13 +14,12 @@ Supports both:
 from __future__ import annotations
 
 import argparse
-import io
 import logging
-from pathlib import Path
 import socket
 import sys
 import threading
 import time
+from pathlib import Path
 
 import paramiko
 
@@ -59,56 +58,198 @@ MOCK_RESPONSES = {
     "/bin/grep -E '^UMASK' /etc/login.defs": "UMASK 027\n",
     "/usr/bin/systemctl is-active auditd": "active\n",
     "/usr/bin/timedatectl show -p NTPSynchronized": "NTPSynchronized=yes\n",
+    # ---------------- Cisco Catalyst 9300 (IOS XE 17.12) ----------------
+    "terminal length 0": "",
+    "terminal width 511": "",
+    "show clock": "*10:42:17.512 UTC Thu Oct 30 2026\n",
     "show version": (
         "Cisco IOS XE Software, Version 17.12.01\n"
         "Cisco Catalyst 9300 Series Switches\n"
+        "core-sw-01 uptime is 41 days, 3 hours, 12 minutes\n"
         "Switch Ports Model                     SW Version            Mode\n"
         "------ ----- -----                     ----------            ----\n"
         "*    1 28    C9300-24T                 17.12.01              INSTALL\n"
     ),
     "show running-config": (
+        "Building configuration...\n"
+        "!\n"
         "version 17.12\n"
+        "hostname core-sw-01\n"
+        "service timestamps log datetime msec localtime show-timezone\n"
         "service password-encryption\n"
+        "!\n"
+        "enable secret 9 $9$Zc4kQ1mNbR8uLs$ExampleHashOnly\n"
+        "aaa new-model\n"
+        "aaa authentication login default local\n"
+        "!\n"
         "no ip source-route\n"
-        "no cdp run\n"
         "ip ssh version 2\n"
-        "no ip http server\n"
+        "ip ssh time-out 60\n"
+        "ip ssh authentication-retries 3\n"
+        "ip http server\n"
         "ip http secure-server\n"
+        "ip dhcp snooping vlan 10,20\n"
+        "ip dhcp snooping\n"
+        "!\n"
         "logging host 10.20.100.5\n"
         "ntp server 10.20.100.1\n"
-        "banner motd ^Authorized Access Only^\n"
+        "snmp-server community public RO\n"
+        "snmp-server group MONITOR v3 priv\n"
+        "spanning-tree mode rapid-pvst\n"
+        "spanning-tree portfast bpduguard default\n"
+        "!\n"
+        "interface GigabitEthernet1/0/1\n"
+        " description user-pc\n"
+        " switchport access vlan 10\n"
+        " switchport mode access\n"
+        " switchport port-security\n"
+        "!\n"
+        "interface Vlan1\n"
+        " ip address 10.20.1.2 255.255.255.0\n"
+        "!\n"
+        "interface Vlan99\n"
+        " ip address 10.20.99.2 255.255.255.0\n"
+        "!\n"
+        "ip access-list standard MGMT-ONLY\n"
+        " 10 permit 10.20.100.0 0.0.0.255\n"
+        " 20 deny any log\n"
+        "ip access-list extended EDGE-IN\n"
+        " 10 permit tcp 10.20.100.0 0.0.0.255 any eq 22\n"
+        " 20 permit tcp any any eq 3389\n"
+        " 30 permit tcp any host 10.20.5.10 eq 443\n"
+        " 40 permit tcp any host 10.20.5.10 eq 443\n"
+        " 50 deny ip any any log\n"
+        "!\n"
+        "banner motd ^C Authorized access only. Activity is monitored. ^C\n"
+        "!\n"
+        "line con 0\n"
+        " exec-timeout 5 0\n"
         "line vty 0 4\n"
+        " access-class MGMT-ONLY in\n"
         " exec-timeout 10 0\n"
         " transport input ssh\n"
+        "line vty 5 15\n"
+        " exec-timeout 30 0\n"
+        " transport input ssh telnet\n"
         "!\n"
+        "end\n"
     ),
     "show interfaces switchport": (
-        "Name: Gi1/0/1\n"
-        "Switchport: Enabled\n"
-        "Administrative Mode: static access\n"
-        "Operational Mode: static access\n"
-        "Access Mode VLAN: 10\n"
-        "!\n"
-        "Name: Gi1/0/24\n"
-        "Switchport: Enabled\n"
-        "Administrative Mode: trunk\n"
-        "Operational Mode: trunk\n"
+        "Name: Gi1/0/1\nSwitchport: Enabled\nAdministrative Mode: static access\n"
+        "Operational Mode: static access\nAccess Mode VLAN: 10 (CORPORATE)\n!\n"
+        "Name: Gi1/0/2\nSwitchport: Enabled\nAdministrative Mode: static access\n"
+        "Operational Mode: static access\nAccess Mode VLAN: 1 (default)\n!\n"
+        "Name: Gi1/0/3\nSwitchport: Enabled\nAdministrative Mode: static access\n"
+        "Operational Mode: static access\nAccess Mode VLAN: 1 (default)\n!\n"
+        "Name: Gi1/0/24\nSwitchport: Enabled\nAdministrative Mode: trunk\nOperational Mode: trunk\n"
     ),
     "show spanning-tree summary": (
-        "Switch is in rapid-pvst mode\n"
-        "Root bridge for: none\n"
-        "PortFast BPDU Guard is enabled\n"
+        "Switch is in rapid-pvst mode\nRoot bridge for: none\nPortFast BPDU Guard Default is enabled\n"
     ),
     "show port-security": (
+        "Secure Port  MaxSecureAddr  CurrentAddr  SecurityViolation  Security Action\n"
+        "      Gi1/0/1              1            1                  0         Restrict\n"
         "Port Security : Enabled\n"
-        "Max Secure Addr: 1\n"
     ),
     "show vlan brief": (
         "VLAN Name                             Status    Ports\n"
         "---- -------------------------------- --------- -------------------------------\n"
         "1    default                          active    Gi1/0/2, Gi1/0/3\n"
         "10   CORPORATE                        active    Gi1/0/1\n"
+        "99   MGMT                             active\n"
     ),
+    "show interfaces status": (
+        "Port         Name               Status       Vlan       Duplex  Speed Type\n"
+        "Gi1/0/1      user-pc            connected    10         a-full a-1000 10/100/1000BaseTX\n"
+        "Gi1/0/2                         notconnect   1            auto   auto 10/100/1000BaseTX\n"
+        "Gi1/0/3                         notconnect   1            auto   auto 10/100/1000BaseTX\n"
+        "Gi1/0/4                         disabled     999          auto   auto 10/100/1000BaseTX\n"
+        "Gi1/0/24     uplink             connected    trunk      a-full a-1000 10/100/1000BaseTX\n"
+    ),
+    # ---------------- Fortinet FortiGate 100F (FortiOS 7.4) ----------------
+    "get system status": (
+        "Version: FortiGate-100F v7.4.3,build2573,240201 (GA.F)\n"
+        "Serial-Number: FG100FTK00000000\n"
+        "Hostname: edge-fw-01\n"
+        "Virtual domain configuration: disable\n"
+    ),
+    "get system global": (
+        "admin-https-redirect: enable\n"
+        "admin-sport        : 8443\n"
+        "admin-ssh-port     : 22\n"
+        "admin-lockout-threshold: 3\n"
+        "admin-lockout-duration: 60\n"
+        "admintimeout       : 30\n"
+        "pre-login-banner   : enable\n"
+        "strong-crypto      : enable\n"
+        "hostname           : edge-fw-01\n"
+    ),
+    "get system admin settings": "admin-https-redirect: enable\n",
+    "show firewall policy": (
+        "config firewall policy\n"
+        "    edit 1\n"
+        '        set name "LAN-to-Internet"\n'
+        '        set srcintf "internal"\n'
+        '        set dstintf "wan1"\n'
+        '        set srcaddr "LAN-NET"\n'
+        '        set dstaddr "all"\n'
+        "        set action accept\n"
+        '        set service "HTTP" "HTTPS" "DNS"\n'
+        "        set logtraffic all\n"
+        "    next\n"
+        "    edit 2\n"
+        '        set name "Web-DMZ"\n'
+        '        set srcintf "wan1"\n'
+        '        set dstintf "dmz"\n'
+        '        set srcaddr "all"\n'
+        '        set dstaddr "WEB-SRV"\n'
+        "        set action accept\n"
+        '        set service "HTTPS"\n'
+        "        set logtraffic all\n"
+        "    next\n"
+        "    edit 3\n"
+        '        set name "Web-DMZ-legacy"\n'
+        '        set srcintf "wan1"\n'
+        '        set dstintf "dmz"\n'
+        '        set srcaddr "all"\n'
+        '        set dstaddr "WEB-SRV"\n'
+        "        set action accept\n"
+        '        set service "HTTPS"\n'
+        "    next\n"
+        "    edit 4\n"
+        '        set name "Vendor-RDP"\n'
+        '        set srcintf "wan1"\n'
+        '        set dstintf "internal"\n'
+        '        set srcaddr "all"\n'
+        '        set dstaddr "TERM-SRV"\n'
+        "        set action accept\n"
+        '        set service "RDP"\n'
+        "    next\n"
+        "    edit 5\n"
+        '        set name "DEFAULT-DENY"\n'
+        '        set srcintf "any"\n'
+        '        set dstintf "any"\n'
+        '        set srcaddr "all"\n'
+        '        set dstaddr "all"\n'
+        "        set action deny\n"
+        '        set service "ALL"\n'
+        "        set logtraffic all\n"
+        "    next\n"
+        "end\n"
+    ),
+    "get system interface": (
+        "== [ internal ]\n"
+        "name: internal   mode: static   ip: 10.20.0.1 255.255.255.0   status: up   allowaccess: ping https ssh   type: hard-switch\n"
+        "== [ wan1 ]\n"
+        "name: wan1   mode: static   ip: 203.0.113.10 255.255.255.248   status: up   allowaccess: ping https http   type: physical\n"
+        "== [ dmz ]\n"
+        "name: dmz   mode: static   ip: 10.20.5.1 255.255.255.0   status: up   allowaccess: ping   type: physical\n"
+    ),
+    "get log syslogd setting": "status             : enable\nserver             : 10.20.100.5\nport               : 514\n",
+    "show system ntp": "config system ntp\n    set ntpsync enable\n    set type custom\nend\n",
+    "show system snmp community": 'config system snmp community\n    edit 1\n        set name "public"\n    next\nend\n',
+    "show system snmp user": "config system snmp user\nend\n",
+    "show system password-policy": "config system password-policy\n    set status enable\n    set minimum-length 12\nend\n",
 }
 
 
@@ -165,20 +306,18 @@ class MockServer(paramiko.ServerInterface):
         print(f"  [Mock SSH] Executed command: {cmd_str}", flush=True)
 
         resp = MOCK_RESPONSES.get(cmd_str)
+        exit_code = 0
         if resp is None:
-            first_word = cmd_str.split()[0] if cmd_str.split() else ""
-            for k, v in MOCK_RESPONSES.items():
-                if first_word and first_word in k:
-                    resp = v
-                    break
-        if resp is None:
-            resp = f"Command recognized by mock target: {cmd_str}\n"
+            # Unknown commands fail like a real device instead of returning another
+            # device's output.
+            resp = f"% Unknown command: {cmd_str}\n"
+            exit_code = 1
 
         def _send():
             time.sleep(0.02)
             try:
                 channel.sendall(resp.encode("utf-8"))
-                channel.send_exit_status(0)
+                channel.send_exit_status(exit_code)
             except Exception:
                 pass
             finally:
@@ -194,7 +333,7 @@ class MockServer(paramiko.ServerInterface):
 
 def handle_shell(channel) -> None:
     try:
-        channel.sendall(b"\r\n--- BaselineGuard Mock Target SSH Shell ---\r\nswitch# ")
+        channel.sendall(b"\r\ncore-sw-01# ")
         buf = ""
         while not channel.closed:
             data = channel.recv(1024)
@@ -213,16 +352,11 @@ def handle_shell(channel) -> None:
                         return
                     elif line:
                         res = MOCK_RESPONSES.get(line)
-                        if not res:
-                            for k, v in MOCK_RESPONSES.items():
-                                if line.lower() in k.lower() or k.lower() in line.lower():
-                                    res = v
-                                    break
-                        if res:
+                        if res is not None:
                             channel.sendall(b"\r\n" + res.replace("\n", "\r\n").encode("utf-8"))
                         else:
-                            channel.sendall(b"\r\n% Unrecognized command in mock simulator.\r\n")
-                    channel.sendall(b"\r\nswitch# ")
+                            channel.sendall(b"\r\n% Invalid input detected at '^' marker.\r\n")
+                    channel.sendall(b"\r\ncore-sw-01# ")
                 elif ch in ("\b", "\x7f"):
                     buf = buf[:-1] if buf else ""
                 else:
@@ -244,7 +378,7 @@ def handle_connection(client: socket.socket, addr: tuple[str, int], server_key: 
         server = MockServer()
         try:
             transport.start_server(server=server)
-        except (paramiko.SSHException, EOFError, TimeoutError, socket.error):
+        except (OSError, paramiko.SSHException, EOFError, TimeoutError):
             return
 
         while transport.is_active():
@@ -282,7 +416,7 @@ def run_mock_server(port: int = 2222, host: str = "127.0.0.1") -> None:
     print("\n" + "=" * 65)
     print(f"  [+] BaselineGuard Mock Target SSH Server listening on {host}:{port}")
     print("  [+] Username: audituser  |  Password: auditpass")
-    print("  [+] Simulates: Ubuntu 22.04 LTS & Cisco IOS XE switch/router")
+    print("  [+] Simulates: Ubuntu 22.04 LTS, Cisco Catalyst 9300 (IOS XE 17.12), FortiGate 100F (FortiOS 7.4)")
     print("  [!] Connect via: ssh -p 2222 audituser@127.0.0.1")
     print("=" * 65 + "\n", flush=True)
 

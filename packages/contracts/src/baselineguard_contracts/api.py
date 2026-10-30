@@ -68,6 +68,11 @@ class AssetRead(Contract):
     owner_id: UUID | None = None
     tags: dict[str, str]
     archived_at: str | None = None
+    # Real collection readiness, never inferred by the UI.
+    collection_mode: str = "import"  # live_ssh | live_local | fixture | import
+    host_key_fingerprint: str | None = None
+    host_key_verified_at: str | None = None
+    credential_bound: bool = False
 
 
 class ScanCreate(Contract):

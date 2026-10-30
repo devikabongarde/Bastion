@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Request
 from baselineguard_api.routes.v1.auth import router as auth_router
 from baselineguard_api.routes.v1.collector import router as collector_router
 from baselineguard_api.routes.v1.inventory import router as inventory_router
+from baselineguard_api.routes.v1.live import router as live_router
 from baselineguard_api.routes.v1.pipeline import router as pipeline_router
 from baselineguard_api.routes.v1.policies import router as policies_router
 from baselineguard_api.routes.v1.scans import router as scans_router
@@ -17,6 +18,7 @@ router.include_router(policies_router)
 router.include_router(pipeline_router)
 router.include_router(schedules_router)
 router.include_router(collector_router)
+router.include_router(live_router)
 
 
 @router.get("/me", tags=["identity"])

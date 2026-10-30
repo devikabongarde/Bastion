@@ -22,6 +22,10 @@ FORTIGATE_READERS: dict[str, str] = {
     "fortigate.firewall.policy": "show firewall policy",
     "fortigate.system.interface": "get system interface",
     "fortigate.log.syslog": "get log syslogd setting",
+    "fortigate.system.ntp": "show system ntp",
+    "fortigate.snmp.community": "show system snmp community",
+    "fortigate.snmp.user": "show system snmp user",
+    "fortigate.system.password_policy": "show system password-policy",
 }
 
 

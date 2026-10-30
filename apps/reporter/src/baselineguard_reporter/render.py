@@ -188,6 +188,7 @@ def render_csv(report: ReportDocument) -> bytes:
 
 
 HTML_STYLE = """
+pre.procedure { margin:0; white-space:pre; font:12px/1.5 ui-monospace,monospace; background:#0b2b26; color:#e2f6ef; padding:.5rem .75rem; border-radius:6px; }
 body { font: 15px/1.5 system-ui,sans-serif; color:#202b2b; background:#faf9f6; }
 body { margin:2rem auto; max-width:1120px; padding:0 1.25rem; }
 h1,h2 { line-height:1.2; color:#183b37; }
@@ -237,14 +238,19 @@ def render_html(report: ReportDocument) -> bytes:
             finding.severity,
             finding.status.value,
             finding.reason_code,
+            finding.origin,  # "Source" column: organizational / cis_mapped / vendor_guidance
             expected,
             actual,
             evidence,
             finding.remediation_status,
-            _redact_text(finding.remediation_procedure or ""),
         )
+        procedure = _redact_text(finding.remediation_procedure or "")
         rows.append(
-            "<tr>" + "".join(f"<td>{html.escape(str(cell))}</td>" for cell in cells) + "</tr>"
+            "<tr>"
+            + "".join(f"<td>{html.escape(str(cell))}</td>" for cell in cells)
+            # One command per line so the procedure can be copied and run as written.
+            + (f'<td><pre class="procedure">{html.escape(procedure)}</pre></td>' if procedure else "<td></td>")
+            + "</tr>"
         )
     omissions = "".join(f"<li>{html.escape(item)}</li>" for item in report.omissions)
     omission_section = (
@@ -266,7 +272,7 @@ def render_html(report: ReportDocument) -> bytes:
         f"<title>{html.escape(report.organization_name)} configuration assessment</title>",
         f"<style>{HTML_STYLE}</style></head><body>",
         "<header>",
-        '<p class="meta">BaselineGuard - Frozen assessment report</p>',
+        '<p class="meta">Bastion - Frozen assessment report</p>',
         f"<h1>{html.escape(report.organization_name)} - {html.escape(report.policy_name)}</h1>",
         f'<p class="meta">Report {report.report_id} - Policy revision '
         f"{report.policy_revision} - Cutoff {report.assessment_cutoff.isoformat()}</p>",
