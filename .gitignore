@@ -24,3 +24,4 @@ test-results/
 
 .pnpm-store/
 *.tsbuildinfo
+.pytest_tmp/
