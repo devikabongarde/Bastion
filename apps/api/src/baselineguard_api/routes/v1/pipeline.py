@@ -1063,9 +1063,19 @@ def policy_overview(principal: PrincipalDep, db: DbDep) -> dict[str, Any]:
             bucket = stats.setdefault(record.control_key, {})
             bucket[record.status] = bucket.get(record.status, 0) + 1
     packs = db.execute(select(RulePack).where(RulePack.org_id == principal.org_id)).scalars().all()
+
+    def version_key(version: str) -> tuple[int, ...]:
+        return tuple(int(part) if part.isdigit() else 0 for part in version.split("."))
+
+    # Several versions of a pack can be registered; list each control once, from the newest.
+    packs = sorted(packs, key=lambda p: version_key(p.version), reverse=True)
+    seen: set[str] = set()
     controls: list[dict[str, Any]] = []
     for pack in packs:
         for control in pack.manifest.get("controls", []):
+            if control["id"] in seen:
+                continue
+            seen.add(control["id"])
             controls.append(
                 {
                     "key": control["id"], "title": control["title"], "severity": control["severity"],
